@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.musicplayer.musicplayer.model.Songs;
 import com.musicplayer.musicplayer.service.SongsService;
 
-import java.util.List;      
+import java.util.List;              
 
 @RestController
 @RequestMapping("api/songs")
