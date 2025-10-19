@@ -2,7 +2,9 @@ package com.musicplayer.musicplayer.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true) // Prevents mapping errors from unknown fields
 @Document(collection = "songs")
 public class Songs {
     @Id
@@ -42,6 +44,8 @@ public class Songs {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    // For debugging purposes
     @Override
     public String toString() {
     return "Songs{" +
