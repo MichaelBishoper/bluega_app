@@ -14,11 +14,14 @@ import jakarta.validation.constraints.Size;
 public class Users {
     @Id // the other annotation we just imported
     private String id;
+
     @Indexed(unique = true)
     @NotBlank 
     private String username;
+
     @NotBlank @Size(min = 8)
     private String password; 
+    
     private List<String> followingids;
     
     // -- NOTES --
