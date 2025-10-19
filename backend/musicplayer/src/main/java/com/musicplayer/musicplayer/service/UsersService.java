@@ -88,5 +88,24 @@ public class UsersService {
 
         return user;
     }
+
+    public Users unfollowUser(String userId, String targetId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Prevent user from unfollowing themselves
+        if (userId.equals(targetId)) {
+            throw new RuntimeException("You cannot unfollow yourself");
+        }
+
+        if (user.getFollowingids() != null && user.getFollowingids().contains(targetId)) {
+            user.getFollowingids().remove(targetId);
+            usersRepository.save(user);
+        } else {
+            throw new RuntimeException("You are not following this user");
+        }
+
+        return user;
+    }
     
 }
