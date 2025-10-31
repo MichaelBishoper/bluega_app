@@ -12,13 +12,15 @@ public class Songs {
     private String title;
     private String artist;
     private double duration;
+    private String audioUrl;
 
     public Songs() {}
 
-    public Songs(String title, String artist, double duration) {
+    public Songs(String title, String artist, double duration, String audioUrl) {
         this.title = title;
         this.artist = artist;
         this.duration = duration;
+        this.audioUrl = audioUrl;
     }
     public String getArtist() {
         return artist;
@@ -35,14 +37,20 @@ public class Songs {
     public String getId() {
         return id;
     }
-    public void setId(String id) {
-        this.id = id;
-    }
+    // public void setId(String id) {
+    //     this.id = id;
+    // }
     public String getTitle() {
         return title;
     }
     public void setTitle(String title) {
         this.title = title;
+    }
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
+    }
+    public String getAudioUrl() {
+        return audioUrl;
     }
 
     // For debugging purposes
@@ -53,6 +61,7 @@ public class Songs {
             ", title='" + title + '\'' +
             ", artist='" + artist + '\'' +
             ", duration=" + duration +
+            ", audioUrl="+audioUrl+
             '}';
     }   
 }
