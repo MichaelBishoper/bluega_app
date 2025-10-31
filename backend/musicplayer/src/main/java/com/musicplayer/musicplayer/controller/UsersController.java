@@ -19,6 +19,12 @@ import com.musicplayer.musicplayer.service.UsersService;
 public class UsersController {
     @Autowired
     private UsersService usersService;
+
+
+    @PostMapping
+    public Users addUser(@RequestBody Users user) {
+        return usersService.addUser(user);
+    }
     
     @GetMapping
     public List<Users> getAllUsers() {
@@ -29,11 +35,7 @@ public class UsersController {
     public Users getUserById(@PathVariable String id) {
         return usersService.getUserById(id);
     }
-
-    @PostMapping
-    public Users addUser(@RequestBody Users user) {
-        return usersService.addUser(user);
-    }
+    
     @PutMapping("/{id}")
     public Users updateUser(@PathVariable String id, @RequestBody Users user) {
         return usersService.updateUser(id, user);
@@ -54,5 +56,4 @@ public class UsersController {
     }
 
 
-    
 }
