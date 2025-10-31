@@ -54,7 +54,7 @@ public class PlaylistService {
     
     // --- UPDATE ---
     // Rename playlist
-    public Playlists renamePlaylist(String id, String newName) {
+    public Playlists renamePlaylist(String id, String newName) { //IMPORTANT USE "newName" AS PARAMETER NAME NOT "playlistName"
         Playlists playlist = playlistsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
         playlist.setPlaylistName(newName);
