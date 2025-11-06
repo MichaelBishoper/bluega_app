@@ -1,0 +1,74 @@
+/* Header.css */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #000428, #004e92);
+  padding: 1rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1e90ff, #000428);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.header-search {
+  flex: 1;
+  margin: 0 2rem;
+  position: relative;
+}
+
+.header-search input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 30px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+}
+
+.header-search input::placeholder {
+  color: #aaa;
+}
+
+.header-search i {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  cursor: pointer;
+}
+
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.header-profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #1db954;
+  object-fit: cover;
+}
