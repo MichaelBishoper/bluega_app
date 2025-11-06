@@ -1,0 +1,73 @@
+.music-app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0b0141, #071c73);
+  overflow-y: auto;
+}
+
+/* Grid layout */
+.music-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
+  padding: 40px;
+  justify-items: center;
+  align-items: center;
+}
+
+/* Playlist cards */
+.music-card {
+  width: 150px;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.music-card:hover {
+  transform: scale(1.05);
+}
+
+/* Playlist images */
+.music-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #1e1e1e;
+}
+
+/* Texts */
+.music-title {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.music-artist {
+  color: #b3b3b3;
+  font-size: 0.8rem;
+}
+
+/* Placeholder style */
+.music-card.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  width: 150px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+.music-card.placeholder:hover {
+  border-color: #fff;
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
