@@ -18,4 +18,6 @@ public class AlbumsController {
     public List<Albums> getAllAlbums(){ 
         return albumsService.getAllAlbums();
     }
+
+    
 }
