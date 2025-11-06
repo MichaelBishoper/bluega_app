@@ -1,34 +1,78 @@
-import React from "react";
-import { FaList, FaHome, FaCog } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import {
+  Home,
+  ListMusic,
+  Settings,
+  Play,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import "../css/SideBar.css";
 
-export default function Sidebar() {
+export default function Sidebar({ playlists, onSelectPlaylist, onToggle }) {
+  const [isOpen, setIsOpen] = useState(true);
+  const FALLBACK_IMAGE_URL = "/placeholder-cover.png"; // make sure it’s in /public
+
+  // Notify parent whenever sidebar state changes
+  useEffect(() => {
+    if (onToggle) onToggle(isOpen);
+  }, [isOpen, onToggle]);
+
   return (
-    <aside
-      className="w-64 bg-zinc-900 h-full pt-16 pb-20 fixed left-0 top-0 
-                 flex flex-col justify-between border-r border-purple-800 z-0"
-    >
-      <div className="px-4">
-        <h2 className="text-lg font-semibold mb-4">Menu</h2>
-        <SidebarItem icon={<FaHome />} label="Home" />
-        <SidebarItem icon={<FaList />} label="Playlists" />
-        <SidebarItem icon={<FaCog />} label="Settings" />
+    <aside className={`sidebar ${isOpen ? "open" : "collapsed"}`}>
+      {/* Header + Toggle Button */}
+      <div className="sidebar-header">
+        <button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+        </button>
       </div>
 
-      <div className="px-4 pb-6">
-        <p className="text-xs text-gray-500">© 2025 My Music</p>
-      </div>
+      {/* Navigation */}
+      <nav className="menu">
+        <ul>
+          <li className="menu-item">
+            <Home size={18} />
+            {isOpen && <span>Home</span>}
+          </li>
+          <li className="menu-item">
+            <ListMusic size={18} />
+            {isOpen && <span>Library</span>}
+          </li>
+          <li className="menu-item">
+            <Settings size={18} />
+            {isOpen && <span>Settings</span>}
+          </li>
+        </ul>
+      </nav>
+
+      {/* Playlist Section */}
+      <section className="playlist-section">
+        {isOpen && <h3>Your Playlists</h3>}
+        <ul className="playlist-list">
+          {playlists.map((p, i) => (
+            <li key={i} className="playlist-item" onClick={() => onSelectPlaylist(p)}>
+              <img
+                src={p.image}
+                alt={p.title}
+                onError={(e) => {
+                  e.currentTarget.src = FALLBACK_IMAGE_URL;
+                  e.currentTarget.onError = null;
+                }}
+              />
+              {isOpen && (
+                <div className="playlist-info">
+                  <span className="playlist-title">{p.title}</span>
+                  {p.artist && <span className="playlist-artist">{p.artist}</span>}
+                </div>
+              )}
+              <Play size={14} className="play-icon" />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Footer */}
+      {isOpen && <footer className="footer">© 2025 My Music</footer>}
     </aside>
-  );
-}
-
-function SidebarItem({ icon, label }) {
-  return (
-    <div
-      className="flex items-center gap-3 px-4 py-2 mb-1 cursor-pointer 
-                 hover:bg-purple-800/40 rounded-md transition-all"
-    >
-      <span className="text-lg">{icon}</span>
-      <span>{label}</span>
-    </div>
   );
 }

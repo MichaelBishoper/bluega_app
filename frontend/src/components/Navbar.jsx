@@ -1,36 +1,31 @@
-import React, { useState } from "react";
-import { FaHome, FaMusic, FaCog, FaBars, FaTimes, FaSearch, FaUser, FaCloudUploadAlt } from "react-icons/fa";
-import "./Navbar.css"; // Import CSS terpisah
+import React from "react";
+import { FaUser, FaMusic, FaBars, FaSearch } from "react-icons/fa";
+import "../css/Navbar.css";
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
+export default function Navbar() {
   return (
     <nav className="navbar">
-      <div className="navbar-logo">🎵 MyMusic</div>
+      {/* Left Section */}
+      <div className="navbar-left">
+        <FaMusic className="navbar-icon" />
+        <h1 className="navbar-title">Bluega</h1>
+      </div>
 
-\
-
-      <div className="navbar-right">
-        <div className="search-box">
+      {/* Center Section (Search Bar) */}
+      <div className="navbar-center">
+        <div className="navbar-search">
           <FaSearch className="search-icon" />
           <input type="text" placeholder="Search songs, artists..." />
         </div>
       </div>
 
-      <button className="menu-toggle" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <FaTimes /> : <FaBars />}
-      </button>
-
-            <div className={`navbar-links ${isOpen ? "open" : ""}`}>
-        <a href="#"><FaHome /> Home</a>
-        <a href="#"><FaMusic /> Playlists</a>
-        <a href="#"><FaCog /> Settings</a>
-        <a href="#"><FaUser /> Profile</a>
-        <a href="#"><FaCloudUploadAlt /> Upload</a>
+      {/* Right Section */}
+      <div className="navbar-right">
+        <div className="profile">
+          <FaUser />
+          <span>Profile</span>
+        </div>
       </div>
     </nav>
   );
-};
-
-export default Navbar;
+}
