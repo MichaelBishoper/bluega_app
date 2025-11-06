@@ -26,6 +26,8 @@ public class Users {
     private String password; 
     
     private List<String> followingids;
+
+    private List<String> savedSongs;
     
     // -- NOTES --
     //constructors participate in both storing and fetching data,
@@ -37,6 +39,7 @@ public class Users {
         this.username = username;
         this.followingids = followingids;
         this.password = encoder.encode(password);
+        this.savedSongs = null;
     }
 
     public String getId() {
@@ -67,6 +70,14 @@ public class Users {
         return followingids;
     }
 
+    public List<String> getSavedSongs() {
+        return savedSongs;
+    }
+
+    public void setSavedSongs(List<String> savedSongs) {
+        this.savedSongs = savedSongs;
+    }
+
     public void setFollowingids(List<String> followingids) {
         this.followingids = followingids;
     }
@@ -78,6 +89,7 @@ public class Users {
                 "id='" + id + '\'' +
                 ", username='" + username + '\'' + //we dont show the password
                 ", following=" + followingids +
+                ", savedSongs=" + savedSongs +
                 '}';
     }
 }

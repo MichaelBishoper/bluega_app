@@ -18,17 +18,27 @@ public class Playlists {
     @NotBlank
     private String playlistName;
     
-    private final String creatorId;
+    private String creatorId; 
 
     private List<String> songIds;
 
     private List<String> savedByUserIds;
+
+    private Long timestamp; // epoch millis when last song added
+
+    // No-args constructor needed for MongoDB
+    public Playlists() {
+        this.songIds = new ArrayList<>();
+        this.savedByUserIds = new ArrayList<>();
+        this.timestamp = null;
+    }
 
     public Playlists(String playlistName, String creatorId, List<String> songIds, List<String> savedByUserIds) {
         this.playlistName = playlistName;
         this.creatorId = creatorId;
         this.songIds = songIds != null ? songIds : new ArrayList<>();
         this.savedByUserIds = savedByUserIds != null ? savedByUserIds : new ArrayList<>();
+        this.timestamp = null;
     }
 
 
@@ -46,7 +56,10 @@ public class Playlists {
     }
 
     public String getCreatorId() {
-        return creatorId; // no setter to prevent changing
+        return creatorId; 
+    }
+    public void setCreatorId(String creatorId) {
+        this.creatorId = creatorId;
     }
     public List<String> getSongIds() {
         return songIds;
@@ -56,6 +69,14 @@ public class Playlists {
     }
     public List<String> getSavedByUserIds() {
         return savedByUserIds;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
     public void setSavedByUserIds(List<String> savedByUserIds) {
         this.savedByUserIds = savedByUserIds;
@@ -68,6 +89,7 @@ public class Playlists {
                 ", playlistName='" + playlistName + '\'' +
                 ", songIds=" + songIds +
                 ", savedByUserIds=" + savedByUserIds +
+                ", timestamp=" + timestamp +
                 '}';
     }
 }

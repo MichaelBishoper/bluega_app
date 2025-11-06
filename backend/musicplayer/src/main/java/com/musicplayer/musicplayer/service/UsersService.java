@@ -14,7 +14,36 @@ public class UsersService {
     @Autowired
     private UsersRepository usersRepository;
 
+        public Users saveSong(String userId, String songId) {
+            Users user = usersRepository.findById(userId).orElse(null);
+            if (user == null) throw new RuntimeException("User not found");
+            if (user.getSavedSongs() == null) user.setSavedSongs(new java.util.ArrayList<>());
+            if (!user.getSavedSongs().contains(songId)) {
+                user.getSavedSongs().add(songId);
+                usersRepository.save(user);
+            } else {
+                throw new RuntimeException("Song already saved");
+            }
+            return user;
+        }
+
+        public Users unsaveSong(String userId, String songId) {
+            Users user = usersRepository.findById(userId).orElse(null);
+            if (user == null) throw new RuntimeException("User not found");
+            if (user.getSavedSongs() == null || !user.getSavedSongs().contains(songId)) {
+                throw new RuntimeException("Song not saved");
+            }
+            user.getSavedSongs().remove(songId);
+            usersRepository.save(user);
+            return user;
+        }
+
     public Users addUser(Users user) {
+        // validate username not empty
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            throw new RuntimeException("Username cannot be empty");
+        }
+
         Users existing = usersRepository.findByUsername(user.getUsername());
         //check if username already exists
         if (existing != null) {
