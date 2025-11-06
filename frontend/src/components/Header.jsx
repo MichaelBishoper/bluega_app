@@ -1,5 +1,5 @@
 import { Search, User } from "lucide-react";
-
+import"../css/Header.css";
 const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-[hsl(var(--header-bg))] backdrop-blur-lg border-b border-border z-50">

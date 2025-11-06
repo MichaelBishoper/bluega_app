@@ -4,15 +4,16 @@ import Sidebar from "./components/SideBar";
 import PlaylistGrid from "./components/PlaylistGrid";
 import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
-import { samplePlaylists, sidebarPlaylists } from "./data/Playlist";
+import { sidebarPlaylists, samplePlaylists } from "./data/Playlist";
 import "./App.css";
 
 export default function App() {
-  const [playlists, setPlaylists] = useState(samplePlaylists);
-  const [filtered, setFiltered] = useState(samplePlaylists);
-  const [current, setCurrent] = useState(samplePlaylists[0]);
+  const [current, setCurrent] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+  // Animate progress bar
   useEffect(() => {
     let id;
     if (isPlaying) {
@@ -23,28 +24,38 @@ export default function App() {
     return () => clearInterval(id);
   }, [isPlaying]);
 
-  const handleSearch = (query) => {
-    console.log("Searching for:", query);
+  const handleSelectPlaylist = (playlist) => {
+    setCurrent(playlist);
+    setIsPanelOpen(true);
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-slate-900 via-black to-slate-800 text-white overflow-hidden">
-      {/* Navbar (fixed at top) */}
-      <Navbar onSearch={handleSearch} />
+    <div className="app-container">
+      {/* Navbar */}
+      <Navbar />
 
-      {/* Main content area */}
-      <div className="flex h-[calc(100vh-160px)] pt-16 pb-20">
+      {/* Main layout */}
+      <div className="main-layout">
         {/* Sidebar */}
-        <Sidebar playlists={sidebarPlaylists} />
+        <Sidebar playlists={sidebarPlaylists} onSelectPlaylist={handleSelectPlaylist} />
 
-        {/* Main content (Playlist grid + right panel) */}
-        <div className="flex flex-1 gap-6 overflow-y-auto px-6">
-          <PlaylistGrid playlists={filtered} onPlay={setCurrent} />
-          <RightPanel current={current} />
-        </div>
+        {/* Main Content */}
+        <main className="content-area">
+          <h2 className="section-title">Your Playlist</h2>
+          <PlaylistGrid playlists={samplePlaylists} onSelect={handleSelectPlaylist} />
+        </main>
+
+        {/* Right Panel */}
+        {current && (
+          <RightPanel
+            playlist={current}
+            isOpen={isPanelOpen}
+            onClose={() => setIsPanelOpen(false)}
+          />
+        )}
       </div>
 
-      {/* PlayerBar overlay (fixed at bottom) */}
+      {/* Player Bar */}
       <PlayerBar
         current={current}
         isPlaying={isPlaying}
