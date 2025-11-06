@@ -16,8 +16,28 @@ public class SongsService {
         return songsRepository.findAll();
     }
 
+    public Songs getSong(String id) {
+        return songsRepository.findById(id).orElse(null);
+    }
+
     public Songs addSong(Songs song) {
         return songsRepository.save(song);
     }
-    // Test comment for test commit
+
+    public Songs updateSong(String id, Songs newSong) {
+        return songsRepository.findById(id)
+            .map(song ->  {
+                song.setTitle(newSong.getTitle());
+                song.setArtist(newSong.getArtist());
+                song.setAudioUrl(newSong.getAudioUrl());
+                song.setDuration(newSong.getDuration());
+                return songsRepository.save(song);
+            })
+            .orElse(null);
+    }
+
+    public void deleteSong(String id) {
+        songsRepository.deleteById(id);
+    }
+    
 }
