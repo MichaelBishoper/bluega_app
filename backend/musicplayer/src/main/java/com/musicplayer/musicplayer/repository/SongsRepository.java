@@ -6,3 +6,4 @@ import com.musicplayer.musicplayer.model.Songs;
 public interface SongsRepository extends MongoRepository<Songs, String> {
 }
     
+
