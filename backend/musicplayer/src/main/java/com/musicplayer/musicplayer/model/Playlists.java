@@ -24,7 +24,7 @@ public class Playlists {
 
     private List<String> savedByUserIds;
 
-    private Long timestamp; // epoch millis when last song added
+    private Long timestamp; // adds timestamp when song is added
 
     // No-args constructor needed for MongoDB
     public Playlists() {
