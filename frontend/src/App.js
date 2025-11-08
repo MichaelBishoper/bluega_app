@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
 import PlaylistGrid from "./components/PlaylistGrid";
@@ -6,6 +7,9 @@ import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
 import { sidebarPlaylists, samplePlaylists } from "./data/Playlist";
 import "./App.css";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import { getToken } from "./utils/auth";
 
 export default function App() {
   const [current, setCurrent] = useState(null);
@@ -29,6 +33,7 @@ export default function App() {
     setIsPanelOpen(true);
   };
 
+  function PrivateLayout() {
   return (
     <div className="app-container">
       {/* Navbar */}
@@ -64,5 +69,26 @@ export default function App() {
         onSeek={(v) => setProgress(Number(v))}
       />
     </div>
+  );
+}
+ return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public pages */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Protected main app */}
+        <Route
+          path="/"
+          element={
+            getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />
+          }
+        />
+
+        {/* fallback*/}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
