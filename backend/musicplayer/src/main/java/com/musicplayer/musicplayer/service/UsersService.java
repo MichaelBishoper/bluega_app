@@ -4,6 +4,7 @@ package com.musicplayer.musicplayer.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.musicplayer.musicplayer.model.Users;
@@ -13,6 +14,10 @@ import com.musicplayer.musicplayer.repository.UsersRepository;
 public class UsersService {
     @Autowired
     private UsersRepository usersRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
 
         public Users saveSong(String userId, String songId) {
             Users user = usersRepository.findById(userId).orElse(null);
@@ -49,6 +54,8 @@ public class UsersService {
         if (existing != null) {
             throw new RuntimeException("Username already exists");
         }
+
+            user.setPassword(passwordEncoder.encode(user.getPassword())); //added password encoding/hashing here
             return usersRepository.save(user);
     }
 
@@ -71,7 +78,7 @@ public class UsersService {
             existingUser.setUsername(newUserData.getUsername());
         }
         if (newUserData.getPassword() != null) {
-            existingUser.setPassword(newUserData.getPassword());
+            existingUser.setPassword(passwordEncoder.encode(newUserData.getPassword())); //added password encoding/hashing here
         }
         if (newUserData.getFollowingids() != null) {
             existingUser.setFollowingids(newUserData.getFollowingids());

@@ -38,7 +38,7 @@ public class Users {
     public Users(String username, String password, List<String> followingids) {
         this.username = username;
         this.followingids = followingids;
-        this.password = encoder.encode(password);
+        this.password = password;
         this.savedSongs = null;
     }
 
