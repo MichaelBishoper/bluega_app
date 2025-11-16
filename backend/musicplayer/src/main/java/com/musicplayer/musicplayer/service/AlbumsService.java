@@ -2,6 +2,7 @@ package com.musicplayer.musicplayer.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.musicplayer.musicplayer.model.Albums;
 import com.musicplayer.musicplayer.model.Songs; // Import Songs
@@ -18,6 +19,8 @@ public class AlbumsService {
     private AlbumsRepository albumsRepository;
     @Autowired
     private SongsRepository songsRepository;
+    @Autowired
+    private S3Service s3Service; // for S3 shenanigans
 
     public List<Albums> getAllAlbums() {
         return albumsRepository.findAll();
@@ -67,8 +70,13 @@ public class AlbumsService {
             .orElse(null);
     }
 
-        public void deleteAlbum(String id) {
-            albumsRepository.deleteById(id);
-        }
+    public void deleteAlbum(String id) {
+        albumsRepository.deleteById(id);
+    }
 
+    // public Albums uploadAlbum(Albums album, MultipartFile cover) {
+    //     String coverUrl = s3Service.uploadFile(cover, "album_covers");
+    //     album.setCoverUrl(coverUrl);
+    //     return albumsRepository.save(album);
+    // }
 }
