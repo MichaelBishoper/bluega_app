@@ -25,6 +25,7 @@ public class Users {
     @NotBlank @Size(min = 8)
     private String password; 
     
+    // List of ids of that the user follows
     private List<String> followingids;
 
     private List<String> savedSongs;
