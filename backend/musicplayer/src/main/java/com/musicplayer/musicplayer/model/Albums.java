@@ -13,6 +13,7 @@ public class Albums {
     private String id;
     private String title;
     private String artist;
+    private String type; 
     private List<AlbumSong> songs;
 
     // Nested class to hold songIDs and ordering within an album
@@ -43,10 +44,11 @@ public class Albums {
 
     public Albums() {}
 
-    public Albums(String title, String artist, List<AlbumSong> songs) {
+    public Albums(String title, String artist, List<AlbumSong> songs, String type) {
         this.title = title;
         this.artist = artist;
         this.songs = songs;
+        this.type = type;
     }
 
     public void setArtist(String artist) {
@@ -72,6 +74,12 @@ public class Albums {
     }
     public List<AlbumSong> getSongs() {
         return songs;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+    public String getType() {
+        return type;
     }
 }
 
