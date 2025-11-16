@@ -1,16 +1,22 @@
 package com.musicplayer.musicplayer.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.musicplayer.musicplayer.model.Playlists;
 import com.musicplayer.musicplayer.model.Songs;
+import com.musicplayer.musicplayer.repository.PlaylistsRepository;
 import com.musicplayer.musicplayer.repository.SongsRepository;
-import java.util.List;
 
 @Service
 public class SongsService {
     @Autowired
     private SongsRepository songsRepository;
+
+    @Autowired //used in deleteSong to remove song from playlists when deleted
+    private PlaylistsRepository playlistsRepository;
 
     public List<Songs> getAllSongs() {
         return songsRepository.findAll();
@@ -37,6 +43,16 @@ public class SongsService {
     }
 
     public void deleteSong(String id) {
+        // Remove song from all playlists
+        List<Playlists> allPlaylists = playlistsRepository.findAll();
+        for (Playlists playlist : allPlaylists) {
+            if (playlist.getSongIds() != null && playlist.getSongIds().contains(id)) {
+                playlist.getSongIds().remove(id);
+                playlistsRepository.save(playlist);
+            }
+        }
+        
+        // Delete the song
         songsRepository.deleteById(id);
     }
     
