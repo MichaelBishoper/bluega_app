@@ -33,6 +33,14 @@
 .navbar-icon {
   color: #a855f7;
 }
+.navbar-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px; /* optional, for rounded corners */
+  margin-right: 10px;
+}
+
 
 /* ===== CENTER (SEARCH) ===== */
 .navbar-center {
@@ -87,4 +95,39 @@
 
 .profile:hover {
   color: #a855f7;
+}
+/* ============ Responsive ============ */
+@media (max-width: 768px) {
+  .navbar-center {
+    display: none; /* hide search bar */
+  }
+
+  .navbar-title {
+    font-size: 1.1rem;
+  }
+
+  .menu-icon {
+    display: block; /* show hamburger icon */
+  }
+
+  .mobile-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #222;
+    border-radius: 0 0 8px 8px;
+    width: 150px;
+    padding: 0.5rem 0;
+    z-index: 10;
+  }
+
+  .mobile-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    color: #ddd;
+  }
+
+  .mobile-item:hover {
+    background: #333;
+  }
 }

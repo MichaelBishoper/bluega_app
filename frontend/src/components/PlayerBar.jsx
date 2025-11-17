@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/components/PlayerBar.jsx
+import React from "react";
 import {
   Play,
   Pause,
@@ -8,111 +9,170 @@ import {
   Repeat,
   Volume2,
 } from "lucide-react";
-// Corrected import path assuming the CSS file is in the same directory
 import "../css/Playerbar.css";
+import { useMusic } from "../data/Music";
 
-export default function PlayerBar({ current, isPlaying, onToggle }) {
-  const [liked, setLiked] = useState(false);
-  const [progress, setProgress] = useState(0);
+export default function PlayerBar() {
+  // ✅ Pull functions and states from updated MusicContext
+  const {
+    currentSong,
+    isPlaying,
+    togglePlay,
+    next,
+    prev,
+    toggleLoop,
+    isLooping,
+    volume,
+    setVolumeLevel,
+    progress,
+    seek,
+  } = useMusic();
 
-  // Time Calculation Logic
-  // Assuming a total song duration of 5 minutes (300 seconds)
-  const totalDuration = 300; 
-  const currentTimeSec = Math.floor(progress * totalDuration);
-  
-  // Utility to format seconds into M:SS string
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = String(seconds % 60).padStart(2, '0');
-    return `${minutes}:${remainingSeconds}`;
+  // ✅ Fallback cover and details if no song playing
+  const songCover =
+    currentSong?.cover ||
+    currentSong?.image ||
+    "https://placehold.co/45x45/4361ee/ffffff?text=♫";
+  const songTitle = currentSong?.title || "No Song Playing";
+  const songArtist = currentSong?.artist || "—";
+
+  // ✅ Convert progress (0–100) to seconds display
+  const formatTime = (ratio) => {
+    if (!ratio || isNaN(ratio)) return "0:00";
+    const minutes = Math.floor(ratio / 60);
+    const seconds = Math.floor(ratio % 60).toString().padStart(2, "0");
+    return `${minutes}:${seconds}`;
   };
 
-  // Animate progress bar
-  useEffect(() => {
-    let id;
-    if (isPlaying) {
-      id = setInterval(() => {
-        // Increment progress. Reset to 0 if it reaches 1.
-        setProgress((p) => (p + 0.005 >= 1 ? 0 : p + 0.005));
-      }, 400);
-    }
-    return () => clearInterval(id);
-  }, [isPlaying]);
+  // ✅ Handle progress bar seek
+  const handleSeek = (e) => {
+    seek(parseFloat(e.target.value));
+  };
+
+  // ✅ Handle volume changes
+  const handleVolumeChange = (e) => {
+    setVolumeLevel(parseFloat(e.target.value));
+  };
+
+  // Mock like state for UI (not implemented in context yet)
+  const [isLiked, setIsLiked] = React.useState(false);
+  const toggleLike = () => setIsLiked(!isLiked);
 
   return (
     <div className="player-bar">
-      {/* LEFT: song info */}
+      {/* LEFT: Song Info */}
       <div className="player-left">
-        {current ? (
-          <>
-            <img 
-              src={current.image} 
-              alt={current.title} 
-              className="song-cover" 
-              onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/45x45/4361ee/ffffff?text=♫"; }}
-            />
-            <div className="song-text">
-              <h4>{current.title}</h4>
-              <p>{current.artist}</p>
-            </div>
-          </>
-        ) : (
-          <>
-            <img src="https://placehold.co/45x45/4361ee/ffffff?text=♫" alt="no song" className="song-cover" />
-            <div className="song-text">
-              <h4>Jazz Nights</h4>
-              <p>Smooth Ensemble</p>
-            </div>
-          </>
-        )}
+        <img
+          src={songCover}
+          alt={songTitle}
+          className="song-cover"
+          onError={(e) =>
+            (e.target.src = "https://placehold.co/45x45/4361ee/ffffff?text=♫")
+          }
+        />
+        <div className="song-text">
+          <h4>{songTitle}</h4>
+          <p>{songArtist}</p>
+        </div>
       </div>
 
-      {/* CENTER: controls + progress */}
+      {/* CENTER: Controls + Progress */}
       <div className="player-center">
         <div className="player-controls">
-          <SkipBack size={20} className="icon-btn" />
-          <button className="play-btn" onClick={onToggle} aria-label={isPlaying ? "Pause" : "Play"}>
-            {isPlaying ? <Pause size={22} fill="#fff" /> : <Play size={22} fill="#fff" />}
+          <button
+            className="icon-btn"
+            onClick={prev}
+            disabled={!currentSong}
+            aria-label="Previous Song"
+          >
+            <SkipBack size={20} />
           </button>
-          <SkipForward size={20} className="icon-btn" />
+
+          <button
+            className="play-btn"
+            onClick={togglePlay}
+            disabled={!currentSong}
+            aria-label={isPlaying ? "Pause" : "Play"}
+          >
+            {isPlaying ? (
+              <Pause size={22} fill="#fff" />
+            ) : (
+              <Play size={22} fill="#fff" />
+            )}
+          </button>
+
+          <button
+            className="icon-btn"
+            onClick={next}
+            disabled={!currentSong}
+            aria-label="Next Song"
+          >
+            <SkipForward size={20} />
+          </button>
         </div>
 
-        {/* PROGRESS CONTAINER: Holds time markers and the bar */}
+        {/* PROGRESS BAR */}
         <div className="progress-container">
-          <span className="time-current">{formatTime(currentTimeSec)}</span>
+          {/* we don’t have duration/time tracking yet in context, so show 0:00 */}
+          <span className="time-current">{formatTime(0)}</span>
           <input
             type="range"
             className="progress-bar"
             min="0"
-            max="1"
-            step="0.001"
+            max="100"
+            step="0.5"
             value={progress}
-            onChange={(e) => setProgress(parseFloat(e.target.value))}
-            aria-label="Song progress"
-            style={{ 
-                // Inline style for the progress fill
-                background: `linear-gradient(to right, #fff 0%, #fff ${progress * 100}%, rgba(255, 255, 255, 0.3) ${progress * 100}%, rgba(255, 255, 255, 0.3) 100%)`
-            }}
+            onChange={handleSeek}
+            disabled={!currentSong}
+            aria-label="Seek track position"
           />
-          <span className="time-total">{formatTime(totalDuration)}</span>
+          <span className="time-total">{formatTime(0)}</span>
         </div>
       </div>
 
-      {/* RIGHT: like + repeat + volume */}
+      {/* RIGHT: Volume & Extras */}
       <div className="player-right">
         <button
-          className={`icon-btn ${liked ? "liked" : ""}`}
-          onClick={() => setLiked(!liked)}
-          aria-label={liked ? "Unlike song" : "Like song"}
+          className="icon-btn"
+          onClick={toggleLike}
+          disabled={!currentSong}
+          aria-label={isLiked ? "Unlike Song" : "Like Song"}
         >
-          <Heart size={18} fill={liked ? '#ff5c8a' : 'none'} stroke={liked ? '#ff5c8a' : 'currentColor'} />
+          <Heart
+            size={18}
+            fill={isLiked ? "var(--accent-color, #ef4444)" : "none"}
+            stroke={isLiked ? "var(--accent-color, #ef4444)" : "currentColor"}
+          />
         </button>
-        <button className="icon-btn" aria-label="Toggle repeat">
-          <Repeat size={18} />
+
+        <button
+          className="icon-btn"
+          onClick={toggleLoop}
+          disabled={!currentSong}
+          aria-label={isLooping ? "Disable Repeat" : "Enable Repeat"}
+        >
+          <Repeat
+            size={18}
+            style={{
+              color: isLooping
+                ? "var(--primary-color, #1ed760)"
+                : "currentColor",
+            }}
+          />
         </button>
+
         <div className="volume-control">
           <Volume2 size={18} />
-          <input type="range" className="volume-bar" aria-label="Volume control" />
+          <input
+            type="range"
+            className="volume-bar"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={handleVolumeChange}
+            aria-label="Volume control"
+          />
         </div>
       </div>
     </div>
