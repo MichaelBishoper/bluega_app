@@ -2,6 +2,8 @@ package com.musicplayer.musicplayer.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.musicplayer.musicplayer.model.Songs; // Import Songs
 import com.musicplayer.musicplayer.model.Albums;
 import com.musicplayer.musicplayer.service.AlbumsService;
@@ -33,6 +35,14 @@ public class AlbumsController {
     public Albums addAlbum(@RequestBody Albums album) {
         return albumsService.addAlbum(album);
     }
+
+    // @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // public Albums uploadAlbum(
+    //         @RequestPart("cover") MultipartFile cover,
+    //         @RequestPart("albumData") Albums albumData
+    // ) {
+    //     return albumsService.uploadAlbum(albumData, cover);
+    // }
 
     @PutMapping("/{id}")
     public Albums updateAlbum(@PathVariable String id, @RequestBody Albums album) {
