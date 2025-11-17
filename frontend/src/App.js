@@ -10,6 +10,7 @@ import MainLayout from "./components/MainLayout";
 import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
 import SongPage from "./pages/SongPage";
+import AlbumUpload from "./pages/AlbumUpload";
 
 import { sidebarPlaylists, samplePlaylists } from "./data/Playlist";
 import { MusicProvider, useMusic } from "./data/Music";
@@ -201,7 +202,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
+        <Route path="/upload-album" element={<AlbumUpload />} />
         <Route
           path="/"
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
