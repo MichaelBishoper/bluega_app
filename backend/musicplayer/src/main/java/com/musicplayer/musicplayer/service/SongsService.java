@@ -31,11 +31,9 @@ public class SongsService {
     }
 
     public Songs addSong(Songs song, MultipartFile audioFile, String albumId, String albumType) {
-        // Upload audio to S3 → returns URL
         String audioUrl = s3Service.uploadSong(audioFile, albumType, albumId);
         song.setAudioUrl(audioUrl);
-        song.setId(albumId);
-        return songsRepository.save(song);
+        return songsRepository.save(song); // now MongoDB auto-generates the _id
     }
 
     public Songs updateSong(String id, Songs newSong) {
