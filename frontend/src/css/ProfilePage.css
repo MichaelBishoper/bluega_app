@@ -1,0 +1,123 @@
+.profile-container {
+  width: 100%;
+  min-height: calc(100vh - 80px);
+  padding: 20px 40px;
+  color: #fff;
+}
+
+/* BANNER */
+.profile-banner {
+  width: 100%;
+  height: 220px;
+  background: linear-gradient(135deg, #1d4ed8, #0f172a);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+}
+
+/* PROFILE PICTURE */
+.profile-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 5px solid #0f172a;
+  object-fit: cover;
+
+  position: absolute;
+  left: 40px;
+  bottom: -60px;
+  background-color: #111;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+}
+
+/* USER INFO */
+.profile-info {
+  margin-top: 90px;
+  padding-left: 40px;
+}
+
+.profile-info h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.profile-info p {
+  color: #b3b3b3;
+  margin-top: 4px;
+}
+
+/* SECTION TITLE */
+.profile-section-title {
+  margin-top: 40px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* GRID LIST (ALBUMS & PLAYLISTS) */
+.profile-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 24px;
+}
+
+/*  CARD ITEM (Album / Playlist) */
+.profile-card {
+  background: #0f172a;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
+
+.profile-card:hover {
+  transform: scale(1.06);
+}
+
+/* image */
+.profile-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+/* title */
+.profile-card-title {
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+/*  UPLOAD BUTTON= */
+.upload-album-btn {
+  margin-top: 10px;
+  padding: 10px 16px;
+
+  background: #1d4ed8;
+  border: none;
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.upload-album-btn:hover {
+  background: #2563eb;
+  transform: scale(1.03);
+}
+
+/* EMPTY STATE */
+.profile-empty {
+  color: #777;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
