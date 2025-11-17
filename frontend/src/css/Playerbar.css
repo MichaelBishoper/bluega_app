@@ -1,7 +1,12 @@
+/* =========================================================
+   PLAYER BAR — Responsive & Non-Overlapping Version
+   ========================================================= */
+
 .player-bar {
   position: fixed;
   bottom: 0;
-  width: 100%;
+  left: 0;
+  right: 0;
   height: 80px;
   display: flex;
   align-items: center;
@@ -10,17 +15,23 @@
   color: #fff;
   padding: 0 1.5rem;
   box-sizing: border-box;
-  z-index: 1000;
+  z-index: 900; /* stays below navbar (1000) but above content */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: all 0.3s ease;
 }
 
-/* LEFT SECTION */
+/* Prevent overlap with sidebar */
+.main-content {
+  margin-bottom: 80px; /* same height as player bar */
+}
+
+/* ===== LEFT SECTION ===== */
 .player-left {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  flex-basis: 220px; 
-  flex-shrink: 0; 
+  flex-basis: 220px;
+  flex-shrink: 0;
 }
 
 .song-cover {
@@ -42,24 +53,22 @@
   color: #ccc;
 }
 
-/* ===== CENTER SECTION (Flexible Container) ===== */
-
+/* ===== CENTER SECTION ===== */
 .player-center {
-  flex-grow: 1; 
+  flex-grow: 1;
   display: flex;
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 100%;
-  padding: 0 40px; 
-  min-width: 300px; 
+  padding: 0 40px;
+  min-width: 300px;
 }
 
-/* Controls stay perfectly centered horizontally */
 .player-controls {
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
   gap: 1.2rem;
 }
 
@@ -70,44 +79,39 @@
   cursor: pointer;
   transition: transform 0.2s ease;
   padding: 0;
-  display: flex; /* Ensures the icon is centered in the button */
+  display: flex;
 }
 
 .play-btn:hover {
   transform: scale(1.2);
 }
 
-/* NEW: Container for Time and Progress Bar */
+/* Progress section */
 .progress-container {
-    display: flex;
-    align-items: center;
-    gap: 10px; 
-    width: 90%; 
-    max-width: 600px; 
-    margin-top: 5px; 
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 90%;
+  max-width: 600px;
+  margin-top: 5px;
 }
 
-/* NEW: Time Text Styling */
 .time-current,
 .time-total {
-    font-size: 0.7rem;
-    color: #ccc;
-    flex-shrink: 0; 
-    width: 30px; 
-    text-align: right;
+  font-size: 0.7rem;
+  color: #ccc;
+  flex-shrink: 0;
+  width: 30px;
+  text-align: right;
 }
 
 .time-total {
-    text-align: left;
+  text-align: left;
 }
 
-
-/* Progress bar: flexible, filling the space between the time markers */
 .progress-bar {
-  flex-grow: 1; 
-  width: auto; 
-  margin: 0; 
-
+  flex-grow: 1;
+  width: auto;
   appearance: none;
   height: 3px;
   background: rgba(255, 255, 255, 0.3);
@@ -116,41 +120,25 @@
   cursor: pointer;
 }
 
-/* Cross-browser styling for the progress thumb */
-.progress-bar::-webkit-slider-thumb {
-  appearance: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-}
-.progress-bar::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-  border: none;
-}
+.progress-bar::-webkit-slider-thumb,
+.progress-bar::-moz-range-thumb,
 .progress-bar::-ms-thumb {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
+  appearance: none;
+  border: none;
 }
 
-
-/* ================================================= */
 /* ===== RIGHT SECTION ===== */
-/* ================================================= */
 .player-right {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.6rem;
-  flex-basis: 220px; 
+  flex-basis: 220px;
   flex-shrink: 0;
 }
 
@@ -160,7 +148,7 @@
   color: #fff;
   cursor: pointer;
   transition: color 0.2s ease, transform 0.2s ease;
-  padding: 5px; 
+  padding: 5px;
 }
 
 .icon-btn:hover {
@@ -194,4 +182,58 @@
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
+}
+
+/* =========================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================= */
+@media (max-width: 768px) {
+  .player-bar {
+    flex-direction: column;
+    height: auto;
+    padding: 0.8rem;
+    gap: 0.5rem;
+  }
+
+  .player-left,
+  .player-right {
+    flex-basis: auto;
+    justify-content: center;
+  }
+
+  .song-cover {
+    width: 40px;
+    height: 40px;
+  }
+
+  .player-center {
+    padding: 0;
+  }
+
+  .progress-container {
+    width: 100%;
+    max-width: none;
+  }
+
+  .volume-bar {
+    width: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .song-text h4 {
+    font-size: 0.8rem;
+  }
+
+  .song-text p {
+    font-size: 0.7rem;
+  }
+
+  .player-controls {
+    gap: 0.8rem;
+  }
+
+  .volume-control {
+    display: none; /* hide volume on very small screens */
+  }
 }

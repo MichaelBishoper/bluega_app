@@ -1,16 +1,16 @@
-
-
-/* ==== GLOBAL STYLES ==== */
-
+/* ============================
+   GLOBAL BASE
+============================ */
 body {
   margin: 0;
   padding: 0;
   background-color: #4727e4;
   color: #f1f1f1;
   font-family: 'Poppins', sans-serif;
-  overflow-y: auto; /* allow vertical scroll */
-  overflow-x: hidden; /* prevent side scroll */
-  height: auto; /* let content define height */
+
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100vh;
 }
 
 a {
@@ -18,256 +18,167 @@ a {
   text-decoration: none;
 }
 
-/* ==== LAYOUT ==== */
+/* ============================
+   APP ROOT
+============================ */
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-}
-
-/* ==== NAVBAR ====
-.navbar {
-  background-color: #1a1a1a;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  border-bottom: 1px solid #333;
-}
-
-.navbar-logo {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #ff0055;
-}
-
-.navbar-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.navbar-links a {
-  font-weight: 500;
-  transition: 0.3s;
-}
-
-.navbar-links a:hover {
-  color: #ff0055;
-} */
-
-/* ==== SIDEBAR ==== */
-.sidebar {
-  background-color: #141414;
-  width: 250px;
-  height: calc(100vh - 120px);
-  padding: 20px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid #222;
-  overflow-y: auto;
-}
-
-.sidebar-title {
-  color: #f1f1f1;
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #333;
-  padding-bottom: 6px;
-}
-
-.sidebar-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  padding: 8px 10px;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.sidebar-item:hover {
-  background-color: #222;
-}
-
-.sidebar-thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.sidebar-name {
-  color: #ddd;
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-
-/* ==== MAIN CONTENT ==== */
-.main-content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  background: #0e0e0e;
-}
-
-.dashboard {
-  display: flex;
-  height: calc(100vh - 130px);
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-}
-
-.card {
-  background-color: #1c1c1c;
-  border-radius: 12px;
-  padding: 15px;
-  text-align: center;
-  transition: transform 0.3s, background-color 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  background-color: #242424;
-}
-
-.card img {
   width: 100%;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
-/* ==== PLAYER BAR ==== */
-.player-bar {
-  background-color: #1a1a1a;
-  padding: 10px 20px;
-  border-top: 1px solid #333;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.player-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.player-info img {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-}
-
-.player-controls button {
-  background: none;
-  border: none;
-  color: #f1f1f1;
-  font-size: 1.2rem;
-  cursor: pointer;
-  margin: 0 8px;
-  transition: 0.2s;
-}
-
-.player-controls button:hover {
-  color: #ff0055;
-}
-
-/* ==== SCROLLBAR ==== */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #444;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #666;
-}
-
-.app-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
+/* ============================
+   MAIN LAYOUT
+============================ */
 .main-layout {
   display: flex;
   flex: 1;
+
+  width: 100%;
+  height: 100%;
+
+  padding-top: 64px; /* navbar */
+  padding-bottom: 80px; /* player bar */
+
+  background: #000;
   overflow: hidden;
-  padding-top: 64px; /* navbar height */
-  padding-bottom: 80px; /* player bar height */
 }
 
+/* ============================
+   SIDEBAR
+============================ */
 .sidebar {
   flex-shrink: 0;
-  width: 250px;
+  width: 350px;
+  height: 100%;
+
   background-color: #000;
-  z-index: 10;
+  border-right: 1px solid #222;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  transition: width 0.25s ease, padding 0.25s ease;
 }
 
 .sidebar.collapsed {
   width: 80px;
+  padding: 20px 10px;
+  align-items: center;
 }
 
+/* ============================
+   CONTENT AREA
+============================ */
 .content-area {
   flex: 1;
+  width: 100%;
+  height: 100%;
+
   overflow-y: auto;
-  padding: 2rem;
-  transition: margin-left 0.3s ease;
+  overflow-x: hidden;
+
+  background: #1e00ff;
+
+  padding: 0;
+  margin: 0;
+
+  box-sizing: border-box;
+
+  /* ⭐ Smooth push animation */
+  transition: margin-right 0.3s ease;
 }
 
+/* Page push when right panel is open */
+.content-area.panel-open {
+  margin-right: 260px;
+}
+
+.content-area.panel-open-collapsed {
+  margin-right: 80px;
+}
+
+/* ============================
+   RIGHT PANEL (FIXED)
+============================ */
+.right-panel {
+  position: fixed;
+  top: 64px;
+  right: 0;
+
+  height: calc(100vh - 64px - 80px);
+  width: 260px;
+
+  background-color: #111;
+  border-left: 1px solid #222;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* slide animation */
+  transform: translateX(100%);
+  transition: transform 0.3s ease, width 0.3s ease, padding 0.3s ease;
+
+  z-index: 200; /* ⭐ Prevent overlapping bugs */
+}
+
+/* panel opened */
+.right-panel.open {
+  transform: translateX(0);
+}
+
+/* collapsed right panel */
+.right-panel.collapsed {
+  width: 80px;
+  padding: 20px 10px;
+  overflow: hidden;
+}
+
+/* ============================
+   PLAYLIST AREA
+============================ */
 .playlist-rows {
+  padding: 40px;
   display: flex;
   flex-direction: column;
   gap: 3rem;
-}
-
-/* ==== PLAYLIST GRID (for main content area) ==== */
-.playlist-section {
-  margin-top: 40px;
-}
-
-.playlist-section h2 {
-  color: #fff;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .playlist-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 24px;
-  padding: 10px 20px;
+  width: 100%;
   justify-items: center;
 }
 
 .playlist-card {
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.2s ease;
   background-color: #3e27d4;
   border-radius: 12px;
   padding: 10px;
+
+  text-align: center;
+  cursor: pointer;
+
+  transition: transform 0.2s ease;
 }
 
 .playlist-card:hover {
@@ -292,21 +203,33 @@ a {
   font-size: 0.8rem;
 }
 
-/* === Empty placeholders === */
-.placeholder-card {
-  width: 150px;
-  height: 150px;
-  border: 2px dashed #b3b3b3;
-  border-radius: 8px;
+/* ============================
+   PLAYER BAR
+============================ */
+.player-bar {
+  background-color: #1a1a1a;
+  border-top: 1px solid #333;
+
+  height: 80px;
+  padding: 10px 20px;
+
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #b3b3b3;
-  font-size: 2rem;
-  transition: border-color 0.2s ease;
+  justify-content: space-between;
 }
 
-.placeholder-card:hover {
-  border-color: #fff;
-  color: #fff;
+/* ============================
+   SCROLLBAR
+============================ */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }

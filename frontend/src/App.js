@@ -1,94 +1,214 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+// ===========================================================
+//  FIXED + CLEANED App.js (FINAL VERSION)
+// ===========================================================
+import React, { useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
-import PlaylistGrid from "./components/PlaylistGrid";
+import MainLayout from "./components/MainLayout";
 import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
+import SongPage from "./pages/SongPage";
+
 import { sidebarPlaylists, samplePlaylists } from "./data/Playlist";
-import "./App.css";
+import { MusicProvider, useMusic } from "./data/Music";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { getToken } from "./utils/auth";
 
-export default function App() {
-  const [current, setCurrent] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
+import "./App.css";
+
+
+// ===========================================================
+// PRIVATE LAYOUT (AFTER LOGIN)
+// ===========================================================
+function PrivateLayout() {
+  const navigate = useNavigate();
+  const { currentSong, isPlaying, playSong, togglePlay, audioRef, nextSong, prevSong } =
+    useMusic();
+
+  const [currentPlaylist, setCurrentPlaylist] = useState(null);
+  const [activeSongPage, setActiveSongPage] = useState(null);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // ⭐ MAIN FIX: use only ONE STATE to control the panel
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-  // Animate progress bar
-  useEffect(() => {
-    let id;
-    if (isPlaying) {
-      id = setInterval(() => {
-        setProgress((p) => (p + 0.005 >= 1 ? 0 : p + 0.005));
-      }, 400);
-    }
-    return () => clearInterval(id);
-  }, [isPlaying]);
+  // prevent auto-opening after user manually closes panel
+  const [panelManuallyClosed, setPanelManuallyClosed] = useState(false);
 
-  const handleSelectPlaylist = (playlist) => {
-    setCurrent(playlist);
-    setIsPanelOpen(true);
+  // "playlist" or "song"
+  const [panelMode, setPanelMode] = useState(null);
+
+  // Audio UI tracking
+  const [currentTime, setCurrentTime] = useState(0);
+  const [songDuration, setSongDuration] = useState(0);
+
+  // ----------------------------------------------------------
+  // AUDIO EVENTS
+  // ----------------------------------------------------------
+  const handleTimeUpdate = () => {
+    if (audioRef.current) setCurrentTime(Math.floor(audioRef.current.currentTime));
   };
 
-  function PrivateLayout() {
+  const handleDurationLoad = () => {
+    if (audioRef.current) setSongDuration(Math.floor(audioRef.current.duration));
+  };
+
+  const handleSongEnd = () => {
+    nextSong();
+  };
+
+  // ----------------------------------------------------------
+  // PLAYLIST SELECTED
+  // ----------------------------------------------------------
+  const handleSelectPlaylist = (playlist) => {
+    setCurrentPlaylist(playlist);
+
+    setPanelMode("playlist");
+    setPanelManuallyClosed(false);
+    setIsPanelOpen(true);         // ⭐ push content immediately
+
+    if (playlist.songs?.length > 0) {
+      playSong(playlist.songs[0], playlist, true);
+      setActiveSongPage(null);
+    }
+  };
+
+  // ----------------------------------------------------------
+  // SONG SELECTED
+  // ----------------------------------------------------------
+  const handleSelectSong = (song, playlist = null) => {
+    playSong(song, playlist, true);
+
+    setActiveSongPage(song);
+    setPanelMode("song");
+
+    setPanelManuallyClosed(false);
+    setIsPanelOpen(true);         // ⭐ ensure it ALWAYS pushes content
+  };
+
+  // ----------------------------------------------------------
+  // SEEK BAR
+  // ----------------------------------------------------------
+  const handleSeek = (ratio) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = ratio * audioRef.current.duration;
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  // ----------------------------------------------------------
+  // LOGO CLICK → HOME
+  // ----------------------------------------------------------
+  const handleLogoClick = () => {
+    setActiveSongPage(null);
+    setCurrentPlaylist(null);
+    setIsPanelOpen(false);
+  };
+
+  // ----------------------------------------------------------
+  // LOGOUT
+  // ----------------------------------------------------------
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
   return (
     <div className="app-container">
-      {/* Navbar */}
-      <Navbar />
+      <Navbar onLogoClick={handleLogoClick} onLogout={handleLogout} />
 
-      {/* Main layout */}
       <div className="main-layout">
-        {/* Sidebar */}
-        <Sidebar playlists={sidebarPlaylists} onSelectPlaylist={handleSelectPlaylist} />
 
-        {/* Main Content */}
-        <main className="content-area">
-          <h2 className="section-title">Your Playlist</h2>
-          <PlaylistGrid playlists={samplePlaylists} onSelect={handleSelectPlaylist} />
+        {/* SIDEBAR */}
+        <Sidebar
+          playlists={sidebarPlaylists}
+          onSelectPlaylist={handleSelectPlaylist}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+
+        {/* MAIN CONTENT */}
+        <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
+          {!activeSongPage ? (
+            <MainLayout
+              playlists={samplePlaylists}
+              onSelect={handleSelectPlaylist}
+              onSelectSong={handleSelectSong}
+            />
+          ) : (
+            <SongPage
+              song={activeSongPage}
+              playlistSongs={currentPlaylist?.songs || []}
+              onBack={() => setActiveSongPage(null)}
+            />
+          )}
+
+          {/* AUDIO ELEMENT */}
+          <audio
+            ref={audioRef}
+            src={currentSong?.src || ""}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleDurationLoad}
+            onEnded={handleSongEnd}
+            autoPlay={isPlaying}
+          />
         </main>
 
-        {/* Right Panel */}
-        {current && (
-          <RightPanel
-            playlist={current}
-            isOpen={isPanelOpen}
-            onClose={() => setIsPanelOpen(false)}
-          />
-        )}
+        {/* RIGHT PANEL */}
+        <RightPanel
+          playlist={currentPlaylist}
+          selectedSong={currentSong}
+          panelMode={panelMode}
+          isPanelOpen={isPanelOpen}
+          panelManuallyClosed={panelManuallyClosed}
+          onClose={() => {
+            setIsPanelOpen(false);
+            setPanelManuallyClosed(true);
+          }}
+        />
       </div>
 
-      {/* Player Bar */}
+      {/* PLAYER BAR */}
       <PlayerBar
-        current={current}
+        current={currentSong}
         isPlaying={isPlaying}
-        onToggle={() => setIsPlaying(!isPlaying)}
-        progress={progress}
-        onSeek={(v) => setProgress(Number(v))}
+        onToggle={togglePlay}
+        currentTime={currentTime}
+        onSeek={handleSeek}
+        totalDuration={songDuration}
+        onNext={nextSong}
+        onPrev={prevSong}
       />
     </div>
   );
 }
- return (
-    <BrowserRouter>
+
+
+// ===========================================================
+// ROUTES
+// ===========================================================
+export default function App() {
+  return (
+    <MusicProvider>
       <Routes>
-        {/* Public pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected main app */}
         <Route
           path="/"
-          element={
-            getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />
-          }
+          element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
         />
 
-        {/* fallback*/}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </MusicProvider>
   );
 }

@@ -44,31 +44,23 @@ img {
 /* ================================
    SIDEBAR CONTAINER (Integrated Flex Item)
    ================================ */
+/* SIDEBAR CONTAINER */
 .sidebar {
-  /* --- LAYOUT INTEGRATION FIXES --- */
-  position: relative; /* CRITICAL: Allows integration into the flex container */
-  top: 0;
-  bottom: 0;
-  left: 0;
-  flex-shrink: 0; /* Ensures sidebar width is respected */
-  
-  /* --- DEFAULT (COLLAPSED) STATE STYLES --- */
-  width: 4.5rem; /* Starting narrow width (72px) */
-  padding: 1rem 0.5rem; /* Starting compact padding */
-  
-  /* --- GENERAL STYLES --- */
+  position: sticky;         /* <— important: keeps sidebar in place within layout */
+  top: 64px;                /* height of navbar */
+  bottom: 80px;             /* height of player bar */
+  height: calc(100vh - 144px); /* fill exactly between navbar + player */
+  z-index: 100;
   background-color: #0d0d0d;
   color: #fff;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* Start content from the top */
-  align-items: center; /* Center icons horizontally when collapsed */
-  gap: 1.5rem; /* Space between main sections (menu, playlist) */
-  overflow-y: auto;              /* Enable scrolling for overflow content */
+  justify-content: space-between;
+  overflow-y: auto;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
-  font-family: 'Inter', sans-serif;
-  transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
+  transition: width 0.3s ease, padding 0.3s ease;
 }
+
 
 /* Scrollbar for sidebar */
 .sidebar::-webkit-scrollbar {
@@ -343,3 +335,43 @@ img {
     padding: 0.5rem;
   }
 }
+/* ================================
+   HAMBURGER BUTTON
+   ================================ */
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+}
+
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: block;
+  }
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    padding: 0 1rem;
+    background-color: #000;
+    z-index: 1100;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+
+  .sidebar {
+    width: 200px;
+    transition: transform 0.3s ease;
+  }
+} 
