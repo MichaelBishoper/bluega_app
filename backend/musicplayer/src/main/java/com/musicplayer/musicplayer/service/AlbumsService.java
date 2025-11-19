@@ -9,6 +9,7 @@ import com.musicplayer.musicplayer.model.Songs; // Import Songs
 import com.musicplayer.musicplayer.repository.AlbumsRepository;
 import com.musicplayer.musicplayer.repository.SongsRepository;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Comparator;
@@ -20,7 +21,7 @@ public class AlbumsService {
     @Autowired
     private SongsRepository songsRepository;
     @Autowired
-    private S3Service s3Service; // for S3 shenanigans
+    private S3Service s3Service;
 
     public List<Albums> getAllAlbums() {
         return albumsRepository.findAll();
@@ -55,8 +56,15 @@ public class AlbumsService {
         return songs;
     }
 
-    public Albums addAlbum(Albums album) {
-        return albumsRepository.save(album);
+     public Albums createAlbum(Albums albumRequest) {
+        // validate album type
+        String type = albumRequest.getType().toLowerCase();
+        if (!type.equals("single") && !type.equals("ep") && !type.equals("lp")) {
+            throw new IllegalArgumentException("Invalid album type: " + albumRequest.getType());
+        }
+        if (albumRequest.getSongs() == null)
+            albumRequest.setSongs(new ArrayList<>());
+        return albumsRepository.save(albumRequest); 
     }
 
     public Albums updateAlbum(String id, Albums newAlbum) {
@@ -70,13 +78,25 @@ public class AlbumsService {
             .orElse(null);
     }
 
-    public void deleteAlbum(String id) {
-        albumsRepository.deleteById(id);
-    }
+    // DELETE ALBUM
+    public void deleteAlbum(String albumId) {
 
-    // public Albums uploadAlbum(Albums album, MultipartFile cover) {
-    //     String coverUrl = s3Service.uploadFile(cover, "album_covers");
-    //     album.setCoverUrl(coverUrl);
-    //     return albumsRepository.save(album);
-    // }
+        Albums album = albumsRepository.findById(albumId)
+            .orElseThrow(() -> new RuntimeException("Album not found"));
+
+        // OPTIONAL: Delete songs from DB + S3
+        for (Albums.AlbumSong albumSong : album.getSongs()) {
+            String songId = albumSong.getSongId();
+            Songs song = songsRepository.findById(songId).orElse(null);
+            if (song != null) {
+                // delete file from S3
+                s3Service.deleteFile(song.getAudioUrl());
+
+                // delete song from DB
+                songsRepository.deleteById(songId);
+            }
+        }
+        // delete album
+        albumsRepository.deleteById(albumId);
+    }
 }

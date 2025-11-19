@@ -32,26 +32,19 @@ public class AlbumsController {
     }
 
     @PostMapping
-    public Albums addAlbum(@RequestBody Albums album) {
-        return albumsService.addAlbum(album);
+    public Albums createAlbum(@RequestBody Albums albumRequest) {
+        return albumsService.createAlbum(albumRequest);
     }
-
-    // @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    // public Albums uploadAlbum(
-    //         @RequestPart("cover") MultipartFile cover,
-    //         @RequestPart("albumData") Albums albumData
-    // ) {
-    //     return albumsService.uploadAlbum(albumData, cover);
-    // }
 
     @PutMapping("/{id}")
     public Albums updateAlbum(@PathVariable String id, @RequestBody Albums album) {
         return albumsService.updateAlbum(id, album);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteAlbum(@PathVariable String id) {
-        albumsService.deleteAlbum(id);
+     @DeleteMapping("/{albumId}")
+    public String deleteAlbum(@PathVariable String albumId) {
+        albumsService.deleteAlbum(albumId);
+        return "Album " + albumId + " deleted successfully!";
     }
     
 }
