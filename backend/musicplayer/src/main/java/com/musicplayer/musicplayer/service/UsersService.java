@@ -4,6 +4,7 @@ package com.musicplayer.musicplayer.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.musicplayer.musicplayer.model.Users;
@@ -14,12 +15,47 @@ public class UsersService {
     @Autowired
     private UsersRepository usersRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+
+        public Users saveSong(String userId, String songId) {
+            Users user = usersRepository.findById(userId).orElse(null);
+            if (user == null) throw new RuntimeException("User not found");
+            if (user.getSavedSongs() == null) user.setSavedSongs(new java.util.ArrayList<>());
+            if (!user.getSavedSongs().contains(songId)) {
+                user.getSavedSongs().add(songId);
+                usersRepository.save(user);
+            } else {
+                throw new RuntimeException("Song already saved");
+            }
+            return user;
+        }
+
+        public Users unsaveSong(String userId, String songId) {
+            Users user = usersRepository.findById(userId).orElse(null);
+            if (user == null) throw new RuntimeException("User not found");
+            if (user.getSavedSongs() == null || !user.getSavedSongs().contains(songId)) {
+                throw new RuntimeException("Song not saved");
+            }
+            user.getSavedSongs().remove(songId);
+            usersRepository.save(user);
+            return user;
+        }
+
     public Users addUser(Users user) {
+        // validate username not empty
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            throw new RuntimeException("Username cannot be empty");
+        }
+
         Users existing = usersRepository.findByUsername(user.getUsername());
         //check if username already exists
         if (existing != null) {
             throw new RuntimeException("Username already exists");
         }
+
+            user.setPassword(passwordEncoder.encode(user.getPassword())); //added password encoding/hashing here
             return usersRepository.save(user);
     }
 
@@ -42,7 +78,7 @@ public class UsersService {
             existingUser.setUsername(newUserData.getUsername());
         }
         if (newUserData.getPassword() != null) {
-            existingUser.setPassword(newUserData.getPassword());
+            existingUser.setPassword(passwordEncoder.encode(newUserData.getPassword())); //added password encoding/hashing here
         }
         if (newUserData.getFollowingids() != null) {
             existingUser.setFollowingids(newUserData.getFollowingids());

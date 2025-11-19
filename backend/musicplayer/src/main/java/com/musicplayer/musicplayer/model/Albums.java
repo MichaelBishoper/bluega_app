@@ -13,14 +13,42 @@ public class Albums {
     private String id;
     private String title;
     private String artist;
-    private List<String> songIds;
+    private String type; 
+    private List<AlbumSong> songs;
+
+    // Nested class to hold songIDs and ordering within an album
+    public static class AlbumSong {
+        private String songId;
+        private int order;
+
+        public AlbumSong() {}
+        
+        public AlbumSong(String songId, int order) {
+            this.songId = songId;
+            this.order = order;
+        }
+        // Constructors
+        public void setSongId(String songId) {
+            this.songId = songId;
+        }
+        public String getSongId() {
+            return songId;
+        }
+        public void setOrder(int order) {
+            this.order = order;
+        }
+        public int getOrder() {
+            return order;
+        }
+    }
 
     public Albums() {}
 
-    public Albums(String title, String artist, List<String> SongIDs) {
+    public Albums(String title, String artist, List<AlbumSong> songs, String type) {
         this.title = title;
         this.artist = artist;
-        this.songIds = SongIDs;
+        this.songs = songs;
+        this.type = type;
     }
 
     public void setArtist(String artist) {
@@ -41,11 +69,17 @@ public class Albums {
     public String getTitle() {
         return title;
     }
-    public void setSongIds(List<String> songIds) {
-        this.songIds = songIds;
+    public void setSongs(List<AlbumSong> songs) {
+        this.songs = songs;
     }
-    public List<String> getSongIds() {
-        return songIds;
+    public List<AlbumSong> getSongs() {
+        return songs;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+    public String getType() {
+        return type;
     }
 }
 
