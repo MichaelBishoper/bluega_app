@@ -1,16 +1,26 @@
 package com.musicplayer.musicplayer.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.musicplayer.musicplayer.model.Playlists;
 import com.musicplayer.musicplayer.model.Songs;
+import com.musicplayer.musicplayer.repository.PlaylistsRepository;
 import com.musicplayer.musicplayer.repository.SongsRepository;
-import java.util.List;
 
 @Service
 public class SongsService {
     @Autowired
     private SongsRepository songsRepository;
+
+    @Autowired //used in deleteSong to remove song from playlists when deleted
+    private PlaylistsRepository playlistsRepository;
+
+    @Autowired //used for S3 upload and deletion operations
+    private S3Service s3Service;
 
     public List<Songs> getAllSongs() {
         return songsRepository.findAll();
@@ -20,8 +30,10 @@ public class SongsService {
         return songsRepository.findById(id).orElse(null);
     }
 
-    public Songs addSong(Songs song) {
-        return songsRepository.save(song);
+    public Songs addSong(Songs song, MultipartFile audioFile, String albumId, String albumType) {
+        String audioUrl = s3Service.uploadSong(audioFile, albumType, albumId);
+        song.setAudioUrl(audioUrl);
+        return songsRepository.save(song); // now MongoDB auto-generates the _id
     }
 
     public Songs updateSong(String id, Songs newSong) {
@@ -36,8 +48,31 @@ public class SongsService {
             .orElse(null);
     }
 
-    public void deleteSong(String id) {
+    public boolean deleteSong(String id) {
+        // Remove song from all playlists
+        List<Playlists> allPlaylists = playlistsRepository.findAll();
+        for (Playlists playlist : allPlaylists) {
+            if (playlist.getSongIds() != null && playlist.getSongIds().contains(id)) {
+                playlist.getSongIds().remove(id);
+                playlistsRepository.save(playlist);
+            }
+        }
+        // 1. Fetch the song first
+        Songs song = songsRepository.findById(id).orElse(null);
+        if (song == null) return false;
+
+        // 2. Delete from S3 using the audioUrl
+        if (song.getAudioUrl() != null && !song.getAudioUrl().isEmpty()) {
+            s3Service.deleteFile(song.getAudioUrl());
+        }
+
+        // 3. Delete from database
         songsRepository.deleteById(id);
+        return true;
+        // Delete the song
+        // Note: This is too woke
     }
+
+    
     
 }
