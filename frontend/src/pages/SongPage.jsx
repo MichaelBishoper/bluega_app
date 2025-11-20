@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 import React, { useEffect, useRef, useState } from "react";
+=======
+import React, { useState } from "react";
+>>>>>>> Stashed changes
 import "../css/SongPage.css";
 import { Play, Pause } from "lucide-react";
 import { useMusic } from "../data/Music";
@@ -16,10 +20,16 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
   } = useMusic();
 
   const [showAddModal, setShowAddModal] = useState(false);
+<<<<<<< Updated upstream
   const popupRef = useRef(null);
   const addBtnRef = useRef(null);
 
   // ❗️This MUST be before ANY return
+=======
+
+  if (!currentSong) return <div className="songpage-container" />;
+
+>>>>>>> Stashed changes
   const recentSongs =
     recentHistory.length > 0
       ? [...recentHistory].slice(0, 10)
@@ -77,7 +87,12 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
 
   return (
     <div className="songpage-container">
+<<<<<<< Updated upstream
       {/* TOP BANNER */}
+=======
+
+      {/* ===================== TOP BANNER ===================== */}
+>>>>>>> Stashed changes
       <div className="song-banner large">
         <div className="song-top-row horizontal">
           <div className="song-info">
@@ -94,11 +109,15 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
 
         <div className="song-banner-actions">
           <div className="left-actions">
+<<<<<<< Updated upstream
             <button
               ref={addBtnRef}
               className="action-btn"
               onClick={() => setShowAddModal((s) => !s)}
             >
+=======
+            <button className="action-btn" onClick={() => setShowAddModal(true)}>
+>>>>>>> Stashed changes
               + Add
             </button>
             <button className="action-btn">❤ Like</button>
@@ -119,6 +138,7 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
         </div>
       </div>
 
+<<<<<<< Updated upstream
       {/* POPUP */}
       {showAddModal && (
         <div className="add-popup-wrapper">
@@ -177,11 +197,40 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
             >
               Close
             </div>
+=======
+      {/* ===================== ADD TO PLAYLIST MODAL ===================== */}
+      {showAddModal && (
+        <div className="add-modal-overlay">
+          <div className="add-modal">
+            <h2>Select Playlist</h2>
+
+            {playlists.map((pl) => (
+              <div
+                key={pl.id}
+                className="add-modal-item"
+                onClick={() => {
+                  addSongToPlaylist(pl.id, currentSong);
+                  setShowAddModal(false);
+                }}
+              >
+                <img src={pl.image} className="add-modal-img" />
+                <span>{pl.title}</span>
+              </div>
+            ))}
+
+            <button className="add-modal-close" onClick={() => setShowAddModal(false)}>
+              Close
+            </button>
+>>>>>>> Stashed changes
           </div>
         </div>
       )}
 
+<<<<<<< Updated upstream
       {/* BOTTOM */}
+=======
+      {/* ===================== BOTTOM SECTIONS ===================== */}
+>>>>>>> Stashed changes
       <div className="banner-bottom">
         <div className="recently-played">
           <h3>Recently Played</h3>

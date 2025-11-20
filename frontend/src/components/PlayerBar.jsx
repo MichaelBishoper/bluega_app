@@ -13,7 +13,6 @@ import "../css/Playerbar.css";
 import { useMusic } from "../data/Music";
 
 export default function PlayerBar() {
-  // ✅ Pull functions and states from updated MusicContext
   const {
     currentSong,
     isPlaying,
@@ -26,9 +25,10 @@ export default function PlayerBar() {
     setVolumeLevel,
     progress,
     seek,
+    currentTime,
+    duration,
   } = useMusic();
 
-  // ✅ Fallback cover and details if no song playing
   const songCover =
     currentSong?.cover ||
     currentSong?.image ||
@@ -36,38 +36,38 @@ export default function PlayerBar() {
   const songTitle = currentSong?.title || "No Song Playing";
   const songArtist = currentSong?.artist || "—";
 
-  // ✅ Convert progress (0–100) to seconds display
-  const formatTime = (ratio) => {
-    if (!ratio || isNaN(ratio)) return "0:00";
-    const minutes = Math.floor(ratio / 60);
-    const seconds = Math.floor(ratio % 60).toString().padStart(2, "0");
-    return `${minutes}:${seconds}`;
+  // Convert seconds → MM:SS
+  const formatTime = (seconds) => {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
   };
 
-  // ✅ Handle progress bar seek
-  const handleSeek = (e) => {
-    seek(parseFloat(e.target.value));
+  // NEW: time left (duration - currentTime)
+  const formatTimeLeft = () => {
+    if (!duration || isNaN(duration)) return "-0:00";
+    const remaining = Math.max(duration - currentTime, 0);
+    return `-${formatTime(remaining)}`;
   };
 
-  // ✅ Handle volume changes
-  const handleVolumeChange = (e) => {
-    setVolumeLevel(parseFloat(e.target.value));
-  };
+  const handleSeek = (e) => seek(parseFloat(e.target.value));
+  const handleVolumeChange = (e) => setVolumeLevel(parseFloat(e.target.value));
 
-  // Mock like state for UI (not implemented in context yet)
   const [isLiked, setIsLiked] = React.useState(false);
   const toggleLike = () => setIsLiked(!isLiked);
 
   return (
     <div className="player-bar">
-      {/* LEFT: Song Info */}
+      {/* LEFT SECTION — Song Info */}
       <div className="player-left">
         <img
           src={songCover}
           alt={songTitle}
           className="song-cover"
           onError={(e) =>
-            (e.target.src = "https://placehold.co/45x45/4361ee/ffffff?text=♫")
+            (e.target.src =
+              "https://placehold.co/45x45/4361ee/ffffff?text=♫")
           }
         />
         <div className="song-text">
@@ -76,15 +76,10 @@ export default function PlayerBar() {
         </div>
       </div>
 
-      {/* CENTER: Controls + Progress */}
+      {/* CENTER SECTION — Controls + Progress */}
       <div className="player-center">
         <div className="player-controls">
-          <button
-            className="icon-btn"
-            onClick={prev}
-            disabled={!currentSong}
-            aria-label="Previous Song"
-          >
+          <button className="icon-btn" onClick={prev} disabled={!currentSong}>
             <SkipBack size={20} />
           </button>
 
@@ -92,7 +87,6 @@ export default function PlayerBar() {
             className="play-btn"
             onClick={togglePlay}
             disabled={!currentSong}
-            aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
               <Pause size={22} fill="#fff" />
@@ -101,20 +95,15 @@ export default function PlayerBar() {
             )}
           </button>
 
-          <button
-            className="icon-btn"
-            onClick={next}
-            disabled={!currentSong}
-            aria-label="Next Song"
-          >
+          <button className="icon-btn" onClick={next} disabled={!currentSong}>
             <SkipForward size={20} />
           </button>
         </div>
 
         {/* PROGRESS BAR */}
         <div className="progress-container">
-          {/* we don’t have duration/time tracking yet in context, so show 0:00 */}
-          <span className="time-current">{formatTime(0)}</span>
+          <span className="time-current">{formatTime(currentTime)}</span>
+
           <input
             type="range"
             className="progress-bar"
@@ -124,20 +113,16 @@ export default function PlayerBar() {
             value={progress}
             onChange={handleSeek}
             disabled={!currentSong}
-            aria-label="Seek track position"
           />
-          <span className="time-total">{formatTime(0)}</span>
+
+          {/* RIGHT SIDE: TIME LEFT */}
+          <span className="time-total">{formatTimeLeft()}</span>
         </div>
       </div>
 
-      {/* RIGHT: Volume & Extras */}
+      {/* RIGHT SECTION — Like, Loop, Volume */}
       <div className="player-right">
-        <button
-          className="icon-btn"
-          onClick={toggleLike}
-          disabled={!currentSong}
-          aria-label={isLiked ? "Unlike Song" : "Like Song"}
-        >
+        <button className="icon-btn" onClick={toggleLike} disabled={!currentSong}>
           <Heart
             size={18}
             fill={isLiked ? "var(--accent-color, #ef4444)" : "none"}
@@ -149,7 +134,6 @@ export default function PlayerBar() {
           className="icon-btn"
           onClick={toggleLoop}
           disabled={!currentSong}
-          aria-label={isLooping ? "Disable Repeat" : "Enable Repeat"}
         >
           <Repeat
             size={18}
@@ -171,7 +155,6 @@ export default function PlayerBar() {
             step="0.01"
             value={volume}
             onChange={handleVolumeChange}
-            aria-label="Volume control"
           />
         </div>
       </div>
