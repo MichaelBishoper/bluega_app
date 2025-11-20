@@ -6,6 +6,8 @@ import org.springframework.data.annotation.Id; //annotations  used for MongoDB c
 import org.springframework.data.mongodb.core.index.Indexed; // annotations used to mark unique ids
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -21,6 +23,7 @@ public class Users {
     private String username;
 
     @NotBlank @Size(min = 8)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) //allows only write access, not read access to prevent password leaks
     private String password; 
     
     // List of ids of that the user follows

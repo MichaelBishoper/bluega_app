@@ -55,7 +55,7 @@ import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // changed email to username (we login using)
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -69,8 +69,11 @@ export default function Login() {
 
   // Temporary local account (for frontend-only testing)
   const tempAccounts = [
-    { email: "admin@test.com", password: "123456", role: "admin" },
-    { email: "user@test.com", password: "akuganteng", role: "user" }
+    // { email: "admin@test.com", password: "123456", role: "admin" },
+    // { email: "user@test.com", password: "akuganteng", role: "user" }
+
+    
+    { username: "user", password:"123456"} // we dont have roles in backend OK!
   ];
 
   async function handleSubmit(e) {
@@ -79,29 +82,32 @@ export default function Login() {
     setError("");
 
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+      const res = await fetch(`${API_URL}/api/users/login`, { // updated endpoint to /api/users/login matching backend
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }), // replaced email with username
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token) localStorage.setItem("token", data.token);
-        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-
-        window.location.href = "/";
-        return;
-      }
-
+    if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.message || "Backend login failed, trying local login...");
+    }
+
+    const user = await res.json();
+
+    // backend does not send a token yet – create a dummy one so your app knows you're "logged in"
+    localStorage.setItem("token", "temporary-token");
+    localStorage.setItem("user", JSON.stringify(user));
+
+    window.location.href = "/";
+    return;
+
     } catch (err) {
       console.warn("Backend unreachable. Trying local fallback...");
 
       const user = tempAccounts.find(
-        (acc) => acc.email === email && acc.password === password
+        (acc) => acc.username === username && acc.password === password
       );
 
       if (user) {
@@ -123,11 +129,11 @@ export default function Login() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "1rem" }}>
-          <label>Email</label><br />
+          <label>Username</label><br />
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
             style={{ width: "100%", padding: "0.5rem" }}
           />
@@ -166,8 +172,9 @@ export default function Login() {
         <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#555" }}>
           <p>💡 Temporary accounts you can use:</p>
           <ul>
-            <li><b>Email:</b> admin@test.com | <b>Password:</b> 123456</li>
-            <li><b>Email:</b> user@test.com | <b>Password:</b> 123456</li>
+            {/* <li><b>Email:</b> admin@test.com | <b>Password:</b> 123456</li> */}
+            <li><b>username:</b> user | <b>Password:</b> 123456 (inline)</li>
+            <li><b>username:</b> testuser | <b>Password:</b> password (if u are using Rafael's cluster use this one from the db)</li>
           </ul>
         </div>
       </form>
