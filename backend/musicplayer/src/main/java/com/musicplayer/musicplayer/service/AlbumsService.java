@@ -56,13 +56,14 @@ public class AlbumsService {
         return songs;
     }
     // Create Initial Empty Album
-    public Albums createAlbum(Albums albumRequest) {
+    public Albums createAlbum(Albums albumRequest, String userId) {
         String type = albumRequest.getType().toLowerCase();
         if (!type.equals("single") && !type.equals("ep") && !type.equals("lp")) {
             throw new IllegalArgumentException("Invalid album type: " + albumRequest.getType());
         }
-            albumRequest.setSongs(new ArrayList<>());
-            return albumsRepository.save(albumRequest);
+        albumRequest.setUserId(userId);    
+        albumRequest.setSongs(new ArrayList<>());
+        return albumsRepository.save(albumRequest);
     }
     // Add Song to Album
     public Albums addSongToAlbum(String albumId, Songs createdSong, int order) {
