@@ -203,3 +203,89 @@
 .track-title {
   font-size: 16px;
 }
+
+
+/* Floating add-to-playlist popup */
+.add-popup-wrapper {
+  position: relative;
+  z-index: 1200;
+}
+
+.add-popup {
+  position: absolute;
+  /* place it near the top-left of the banner; adjust left/top as needed */
+  top: 120px;
+  left: 140px;
+  width: 260px;
+  background: linear-gradient(180deg, rgba(10,10,10,0.95), rgba(20,20,80,0.95));
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  color: #fff;
+  font-family: inherit;
+  backdrop-filter: blur(6px);
+  animation: popupIn 0.12s ease-out;
+}
+
+@keyframes popupIn {
+  from { transform: translateY(-6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.add-popup-header {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  margin-bottom: 8px;
+}
+
+.add-popup-sub small { color: #cfd6ff; font-size: 12px; opacity: 0.9; }
+.not-played-note { color: #ffb3b3; }
+
+.add-popup-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.add-popup-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s;
+  margin-bottom: 6px;
+}
+
+.add-popup-item:hover { background: rgba(255,255,255,0.03); }
+
+.add-popup-item.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.add-popup-item.already {
+  outline: 1px solid rgba(255,255,255,0.06);
+}
+
+.add-popup-img {
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.add-popup-meta { display:flex; flex-direction:column; }
+.add-popup-title { font-weight: 600; font-size: 14px; }
+.add-popup-desc { font-size: 12px; color: rgba(255,255,255,0.7); }
+
+.add-popup-close {
+  margin-top: 10px;
+  text-align: center;
+  padding: 6px;
+  font-size: 13px;
+  color: #d1d5ff;
+  cursor: pointer;
+  border-top: 1px solid rgba(255,255,255,0.03);
+}
