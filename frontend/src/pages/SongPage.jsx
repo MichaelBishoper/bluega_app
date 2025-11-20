@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import React, { useEffect, useRef, useState } from "react";
+=======
+import React, { useState } from "react";
+>>>>>>> Stashed changes
 =======
 import React, { useState } from "react";
 >>>>>>> Stashed changes
@@ -21,10 +25,16 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
 
   const [showAddModal, setShowAddModal] = useState(false);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   const popupRef = useRef(null);
   const addBtnRef = useRef(null);
 
   // ❗️This MUST be before ANY return
+=======
+
+  if (!currentSong) return <div className="songpage-container" />;
+
+>>>>>>> Stashed changes
 =======
 
   if (!currentSong) return <div className="songpage-container" />;
@@ -92,6 +102,9 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
 =======
 
       {/* ===================== TOP BANNER ===================== */}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       <div className="song-banner large">
         <div className="song-top-row horizontal">
@@ -110,11 +123,15 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
         <div className="song-banner-actions">
           <div className="left-actions">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             <button
               ref={addBtnRef}
               className="action-btn"
               onClick={() => setShowAddModal((s) => !s)}
             >
+=======
+            <button className="action-btn" onClick={() => setShowAddModal(true)}>
+>>>>>>> Stashed changes
 =======
             <button className="action-btn" onClick={() => setShowAddModal(true)}>
 >>>>>>> Stashed changes
@@ -138,6 +155,7 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
         </div>
       </div>
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       {/* POPUP */}
       {showAddModal && (
@@ -204,6 +222,14 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
           <div className="add-modal">
             <h2>Select Playlist</h2>
 
+=======
+      {/* ===================== ADD TO PLAYLIST MODAL ===================== */}
+      {showAddModal && (
+        <div className="add-modal-overlay">
+          <div className="add-modal">
+            <h2>Select Playlist</h2>
+
+>>>>>>> Stashed changes
             {playlists.map((pl) => (
               <div
                 key={pl.id}
@@ -221,13 +247,20 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
             <button className="add-modal-close" onClick={() => setShowAddModal(false)}>
               Close
             </button>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
           </div>
         </div>
       )}
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       {/* BOTTOM */}
+=======
+      {/* ===================== BOTTOM SECTIONS ===================== */}
+>>>>>>> Stashed changes
 =======
       {/* ===================== BOTTOM SECTIONS ===================== */}
 >>>>>>> Stashed changes

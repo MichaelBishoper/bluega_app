@@ -226,8 +226,11 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} />
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         <Route
@@ -235,9 +238,12 @@ export default function App() {
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
         />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} 
         />
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         <Route path="*" element={<Navigate to="/" replace />} />
