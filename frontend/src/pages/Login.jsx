@@ -169,7 +169,7 @@ export default function Login() {
           <div style={{ color: "red", marginTop: "1rem" }}>{error}</div>
         )}
 
-        <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#555" }}>
+        <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#ffffffff" }}>
           <p>💡 Temporary accounts you can use:</p>
           <ul>
             {/* <li><b>Email:</b> admin@test.com | <b>Password:</b> 123456</li> */}
