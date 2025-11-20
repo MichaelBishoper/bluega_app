@@ -38,25 +38,27 @@ public class AlbumsController {
     }
 
     @PostMapping
-    public Albums createAlbum(@RequestBody Albums albumRequest) {
-        return albumsService.createAlbum(albumRequest);
+    public Albums createAlbum(
+            @RequestBody Albums albumRequest,
+            @RequestParam("userId") String userId
+    ) {
+        return albumsService.createAlbum(albumRequest, userId);
     }
+
 
     @PostMapping("/{albumId}/songs")
     public Albums uploadSongToAlbum(
-            @PathVariable String albumId,
-            @RequestParam("songData") String songData,
-            @RequestPart("audio") MultipartFile audioFile,
-            @RequestParam("albumType") String albumType,
-            @RequestParam("order") int order
+        @PathVariable String albumId,
+        @RequestParam("songData") String songData,
+        @RequestPart("audio") MultipartFile audioFile,
+        @RequestParam("order") int order,
+        @RequestParam("userId") String userId
     ) throws IOException {
-
         Songs songMeta = new ObjectMapper().readValue(songData, Songs.class);
-
-        Songs createdSong = songsService.addSong(songMeta, audioFile, albumType, albumId);
-
+        Songs createdSong = songsService.addSong(songMeta, audioFile, albumId, userId, order);
         return albumsService.addSongToAlbum(albumId, createdSong, order);
     }
+
 
     @PutMapping("/{id}")
     public Albums updateAlbum(@PathVariable String id, @RequestBody Albums album) {
