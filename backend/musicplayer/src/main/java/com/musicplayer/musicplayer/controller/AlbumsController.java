@@ -4,10 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.musicplayer.musicplayer.model.Songs; // Import Songs
+import com.musicplayer.musicplayer.model.Songs; // Import Songs model
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musicplayer.musicplayer.model.Albums;
 import com.musicplayer.musicplayer.service.AlbumsService;
+import com.musicplayer.musicplayer.service.SongsService;
 
+import java.io.IOException;
 import java.util.List;     
 
 @RestController
@@ -15,6 +18,9 @@ import java.util.List;
 public class AlbumsController {
     @Autowired
     private AlbumsService albumsService;
+
+    @Autowired
+    private SongsService songsService;
 
     @GetMapping
     public List<Albums> getAllAlbums(){ 
@@ -34,6 +40,22 @@ public class AlbumsController {
     @PostMapping
     public Albums createAlbum(@RequestBody Albums albumRequest) {
         return albumsService.createAlbum(albumRequest);
+    }
+
+    @PostMapping("/{albumId}/songs")
+    public Albums uploadSongToAlbum(
+            @PathVariable String albumId,
+            @RequestParam("songData") String songData,
+            @RequestPart("audio") MultipartFile audioFile,
+            @RequestParam("albumType") String albumType,
+            @RequestParam("order") int order
+    ) throws IOException {
+
+        Songs songMeta = new ObjectMapper().readValue(songData, Songs.class);
+
+        Songs createdSong = songsService.addSong(songMeta, audioFile, albumType, albumId);
+
+        return albumsService.addSongToAlbum(albumId, createdSong, order);
     }
 
     @PutMapping("/{id}")
