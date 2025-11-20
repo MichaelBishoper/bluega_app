@@ -1,5 +1,5 @@
 // ===========================================================
-//  FIXED + CLEANED App.js (FINAL VERSION)
+//  FIXED + CLEANED App.js (FINAL FULL VERSION)
 // ===========================================================
 import React, { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
@@ -18,12 +18,12 @@ import { MusicProvider, useMusic } from "./data/Music";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { getToken } from "./utils/auth";
+import PlaylistPage from "./pages/PlaylistPage";
 
 import "./App.css";
 
-
 // ===========================================================
-// PRIVATE LAYOUT (AFTER LOGIN)
+// PRIVATE LAYOUT
 // ===========================================================
 function PrivateLayout() {
   const navigate = useNavigate();
@@ -35,16 +35,16 @@ function PrivateLayout() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // ⭐ MAIN FIX: use only ONE STATE to control the panel
+  // ⭐ Playlist page navigation
+  const [currentPage, setCurrentPage] = useState("home"); // "home" | "playlist"
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+
+  // Right panel
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-  // prevent auto-opening after user manually closes panel
   const [panelManuallyClosed, setPanelManuallyClosed] = useState(false);
-
-  // "playlist" or "song"
   const [panelMode, setPanelMode] = useState(null);
 
-  // Audio UI tracking
+  // Audio UI
   const [currentTime, setCurrentTime] = useState(0);
   const [songDuration, setSongDuration] = useState(0);
 
@@ -52,11 +52,15 @@ function PrivateLayout() {
   // AUDIO EVENTS
   // ----------------------------------------------------------
   const handleTimeUpdate = () => {
-    if (audioRef.current) setCurrentTime(Math.floor(audioRef.current.currentTime));
+    if (audioRef.current) {
+      setCurrentTime(Math.floor(audioRef.current.currentTime));
+    }
   };
 
   const handleDurationLoad = () => {
-    if (audioRef.current) setSongDuration(Math.floor(audioRef.current.duration));
+    if (audioRef.current) {
+      setSongDuration(Math.floor(audioRef.current.duration));
+    }
   };
 
   const handleSongEnd = () => {
@@ -64,23 +68,23 @@ function PrivateLayout() {
   };
 
   // ----------------------------------------------------------
-  // PLAYLIST SELECTED
+  // SELECT PLAYLIST → open PlaylistPage
   // ----------------------------------------------------------
   const handleSelectPlaylist = (playlist) => {
+    setSelectedPlaylist(playlist);
     setCurrentPlaylist(playlist);
 
+    // Open Playlist Page
+    setCurrentPage("playlist");
+
+    // Open Right Panel (playlist details)
     setPanelMode("playlist");
     setPanelManuallyClosed(false);
-    setIsPanelOpen(true);         // ⭐ push content immediately
-
-    if (playlist.songs?.length > 0) {
-      playSong(playlist.songs[0], playlist, true);
-      setActiveSongPage(null);
-    }
+    setIsPanelOpen(true);
   };
 
   // ----------------------------------------------------------
-  // SONG SELECTED
+  // SELECT SONG
   // ----------------------------------------------------------
   const handleSelectSong = (song, playlist = null) => {
     playSong(song, playlist, true);
@@ -89,7 +93,7 @@ function PrivateLayout() {
     setPanelMode("song");
 
     setPanelManuallyClosed(false);
-    setIsPanelOpen(true);         // ⭐ ensure it ALWAYS pushes content
+    setIsPanelOpen(true);
   };
 
   // ----------------------------------------------------------
@@ -108,6 +112,8 @@ function PrivateLayout() {
   const handleLogoClick = () => {
     setActiveSongPage(null);
     setCurrentPlaylist(null);
+    setSelectedPlaylist(null);
+    setCurrentPage("home");
     setIsPanelOpen(false);
   };
 
@@ -138,18 +144,36 @@ function PrivateLayout() {
 
         {/* MAIN CONTENT */}
         <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
-          {!activeSongPage ? (
-            <MainLayout
-              playlists={samplePlaylists}
-              onSelect={handleSelectPlaylist}
-              onSelectSong={handleSelectSong}
+
+          {/* 🎵 PLAYLIST PAGE */}
+          {currentPage === "playlist" && selectedPlaylist ? (
+            <PlaylistPage
+              playlist={selectedPlaylist}
+              onBack={() => setCurrentPage("home")}
+              onSelectSong={(song) =>
+                handleSelectSong(song, selectedPlaylist)
+              }
             />
           ) : (
-            <SongPage
-              song={activeSongPage}
-              playlistSongs={currentPlaylist?.songs || []}
-              onBack={() => setActiveSongPage(null)}
-            />
+
+            /* 🏠 HOME or SONG PAGE */
+            !activeSongPage ? (
+              <MainLayout
+                playlists={samplePlaylists}
+                onSelect={handleSelectPlaylist}
+                onSelectSong={handleSelectSong}
+              />
+            ) : (
+              <SongPage
+                song={activeSongPage}
+                playlistSongs={currentPlaylist?.songs || []}
+                onBack={() => setActiveSongPage(null)}
+                openPanel={() => {
+                  setPanelManuallyClosed(false);
+                  setIsPanelOpen(true);
+                }}
+              />
+            )
           )}
 
           {/* AUDIO ELEMENT */}
@@ -192,7 +216,6 @@ function PrivateLayout() {
   );
 }
 
-
 // ===========================================================
 // ROUTES
 // ===========================================================
@@ -202,15 +225,21 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+<<<<<<< Updated upstream
         <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} />
 
+=======
+>>>>>>> Stashed changes
         <Route
           path="/"
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
         />
+<<<<<<< Updated upstream
         <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} 
         />
 
+=======
+>>>>>>> Stashed changes
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MusicProvider>
