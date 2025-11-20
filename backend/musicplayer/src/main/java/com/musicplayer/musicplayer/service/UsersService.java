@@ -18,30 +18,44 @@ public class UsersService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-
-        public Users saveSong(String userId, String songId) {
-            Users user = usersRepository.findById(userId).orElse(null);
-            if (user == null) throw new RuntimeException("User not found");
-            if (user.getSavedSongs() == null) user.setSavedSongs(new java.util.ArrayList<>());
-            if (!user.getSavedSongs().contains(songId)) {
-                user.getSavedSongs().add(songId);
-                usersRepository.save(user);
-            } else {
-                throw new RuntimeException("Song already saved");
-            }
-            return user;
+    public Users login(String username, String rawPassword) {
+        Users user = usersRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("Invalid username or password");
         }
 
-        public Users unsaveSong(String userId, String songId) {
-            Users user = usersRepository.findById(userId).orElse(null);
-            if (user == null) throw new RuntimeException("User not found");
-            if (user.getSavedSongs() == null || !user.getSavedSongs().contains(songId)) {
-                throw new RuntimeException("Song not saved");
-            }
-            user.getSavedSongs().remove(songId);
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        // user.password is WRITE_ONLY in JSON, so it won't be sent to frontend
+        return user;
+    }
+
+
+    public Users saveSong(String userId, String songId) {
+        Users user = usersRepository.findById(userId).orElse(null);
+        if (user == null) throw new RuntimeException("User not found");
+        if (user.getSavedSongs() == null) user.setSavedSongs(new java.util.ArrayList<>());
+        if (!user.getSavedSongs().contains(songId)) {
+            user.getSavedSongs().add(songId);
             usersRepository.save(user);
-            return user;
+        } else {
+            throw new RuntimeException("Song already saved");
         }
+        return user;
+    }
+
+    public Users unsaveSong(String userId, String songId) {
+        Users user = usersRepository.findById(userId).orElse(null);
+        if (user == null) throw new RuntimeException("User not found");
+        if (user.getSavedSongs() == null || !user.getSavedSongs().contains(songId)) {
+            throw new RuntimeException("Song not saved");
+        }
+        user.getSavedSongs().remove(songId);
+        usersRepository.save(user);
+        return user;
+    }
 
     public Users addUser(Users user) {
         // validate username not empty
