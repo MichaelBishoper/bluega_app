@@ -289,3 +289,36 @@
   cursor: pointer;
   border-top: 1px solid rgba(255,255,255,0.03);
 }
+
+.toast-notification {
+  position: fixed;
+  bottom: 90px;
+  right: 25px;
+  background: #1db954;
+  color: white;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  animation: toastFadeIn 0.25s ease, toastFadeOut 0.4s ease 1.6s forwards;
+  z-index: 2000;
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastFadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}

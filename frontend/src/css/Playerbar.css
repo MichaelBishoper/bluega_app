@@ -237,3 +237,78 @@
     display: none; /* hide volume on very small screens */
   }
 }
+
+/* POPUP PANEL */
+/* Queue popup — fully hidden by default */
+.queue-popup {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 320px;
+  max-height: 360px;
+  background: #121212;
+  border-radius: 12px;
+  border: 1px solid #222;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+  padding: 15px;
+  z-index: 999999;
+
+  /* 👇 THIS makes it completely hidden */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+/* When open -> show it */
+.queue-popup.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.queue-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #222;
+}
+
+.queue-cover {
+  width: 46px;
+  height: 46px;
+  border-radius: 6px;
+  margin-right: 10px;
+}
+
+.queue-meta {
+  flex: 1;
+}
+
+.queue-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.queue-artist {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #ff5555;
+  cursor: pointer;
+  font-size: 12px;
+}

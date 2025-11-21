@@ -1,14 +1,6 @@
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 import React, { useEffect, useRef, useState } from "react";
-=======
-import React, { useState } from "react";
->>>>>>> Stashed changes
-=======
-import React, { useState } from "react";
->>>>>>> Stashed changes
 import "../css/SongPage.css";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, ListPlus } from "lucide-react";
 import { useMusic } from "../data/Music";
 
 export default function SongPage({ playlistSongs = [], openPanel }) {
@@ -21,51 +13,52 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
     isPlaying,
     playlists,
     addSongToPlaylist,
+    addToQueue,
   } = useMusic();
 
   const [showAddModal, setShowAddModal] = useState(false);
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
   const popupRef = useRef(null);
   const addBtnRef = useRef(null);
 
-  // ❗️This MUST be before ANY return
-=======
+  const [localToast, setLocalToast] = useState("");
 
-  if (!currentSong) return <div className="songpage-container" />;
+  const triggerLocalToast = (text) => {
+    setLocalToast(text);
+    setTimeout(() => setLocalToast(""), 2000);
+  };
 
->>>>>>> Stashed changes
-=======
-
-  if (!currentSong) return <div className="songpage-container" />;
-
->>>>>>> Stashed changes
+  // Recent Songs fallback
   const recentSongs =
     recentHistory.length > 0
       ? [...recentHistory].slice(0, 10)
       : songs.slice(0, 10);
 
+  // Safe current check
+  const isCurrent = (song) =>
+    song && currentSong && song.url === currentSong.url;
+
+  // Song must be played at least once before adding
+  const hasPlayed =
+    currentSong &&
+    recentHistory.some((s) => s.id === currentSong.id);
+
   const openRightPanel = () => {
     if (typeof openPanel === "function") openPanel();
   };
 
-  const handlePlayClick = (selected) => {
-    if (!selected) return;
+  const handlePlayClick = (song) => {
+    if (!song) return;
 
-    if (currentSong?.url === selected.url) {
+    if (isCurrent(song)) {
       togglePlay();
     } else {
-      playSong(selected);
+      playSong(song);
     }
+
     openRightPanel();
   };
 
-  const isCurrent = (song) => song?.url === currentSong?.url;
-
-  // must be above return!
-  const hasPlayed = recentHistory.some((s) => s.id === currentSong?.id);
-
-  // must be above return!
+  // Close modal on outside / escape
   useEffect(() => {
     const onDocClick = (e) => {
       if (
@@ -84,28 +77,21 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
 
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
+
     return () => {
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onEsc);
     };
   }, []);
 
-  // ✔ NOW it is safe to return early
+  // Safeguard return
   if (!currentSong) {
     return <div className="songpage-container" />;
   }
 
   return (
     <div className="songpage-container">
-<<<<<<< Updated upstream
-      {/* TOP BANNER */}
-=======
-
-      {/* ===================== TOP BANNER ===================== */}
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+      {/* BANNER */}
       <div className="song-banner large">
         <div className="song-top-row horizontal">
           <div className="song-info">
@@ -122,24 +108,33 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
 
         <div className="song-banner-actions">
           <div className="left-actions">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
+            {/* Add to Playlist */}
             <button
               ref={addBtnRef}
               className="action-btn"
               onClick={() => setShowAddModal((s) => !s)}
             >
-=======
-            <button className="action-btn" onClick={() => setShowAddModal(true)}>
->>>>>>> Stashed changes
-=======
-            <button className="action-btn" onClick={() => setShowAddModal(true)}>
->>>>>>> Stashed changes
               + Add
             </button>
+
+            {/* Like */}
             <button className="action-btn">❤ Like</button>
+
+            {/* Add to Queue */}
+            <button
+              className="action-btn"
+              onClick={() => {
+                addToQueue(currentSong);
+                triggerLocalToast("Added to queue");
+              }}
+              title="Add to queue"
+            >
+              <ListPlus size={20} />
+            </button>
           </div>
 
+          {/* Play Button */}
           <button
             className={`song-play-btn ${
               isCurrent(currentSong) && isPlaying ? "playing" : ""
@@ -155,9 +150,7 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
         </div>
       </div>
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      {/* POPUP */}
+      {/* ADD TO PLAYLIST POPUP */}
       {showAddModal && (
         <div className="add-popup-wrapper">
           <div className="add-popup" ref={popupRef}>
@@ -176,13 +169,16 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
 
             <div className="add-popup-list">
               {playlists.map((pl) => {
-                const already = pl.songs?.some((s) => s.id === currentSong.id);
+                const already = pl.songs?.some(
+                  (s) => s.id === currentSong.id
+                );
+
                 return (
                   <div
                     key={pl.id}
-                    className={`add-popup-item ${already ? "already" : ""} ${
-                      !hasPlayed ? "disabled" : ""
-                    }`}
+                    className={`add-popup-item ${
+                      already ? "already" : ""
+                    } ${!hasPlayed ? "disabled" : ""}`}
                     onClick={() => {
                       if (!hasPlayed) return;
                       if (already) {
@@ -215,63 +211,23 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
             >
               Close
             </div>
-=======
-      {/* ===================== ADD TO PLAYLIST MODAL ===================== */}
-      {showAddModal && (
-        <div className="add-modal-overlay">
-          <div className="add-modal">
-            <h2>Select Playlist</h2>
-
-=======
-      {/* ===================== ADD TO PLAYLIST MODAL ===================== */}
-      {showAddModal && (
-        <div className="add-modal-overlay">
-          <div className="add-modal">
-            <h2>Select Playlist</h2>
-
->>>>>>> Stashed changes
-            {playlists.map((pl) => (
-              <div
-                key={pl.id}
-                className="add-modal-item"
-                onClick={() => {
-                  addSongToPlaylist(pl.id, currentSong);
-                  setShowAddModal(false);
-                }}
-              >
-                <img src={pl.image} className="add-modal-img" />
-                <span>{pl.title}</span>
-              </div>
-            ))}
-
-            <button className="add-modal-close" onClick={() => setShowAddModal(false)}>
-              Close
-            </button>
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
           </div>
         </div>
       )}
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      {/* BOTTOM */}
-=======
-      {/* ===================== BOTTOM SECTIONS ===================== */}
->>>>>>> Stashed changes
-=======
-      {/* ===================== BOTTOM SECTIONS ===================== */}
->>>>>>> Stashed changes
+      {/* BOTTOM SECTION */}
       <div className="banner-bottom">
+
+        {/* Recently Played */}
         <div className="recently-played">
           <h3>Recently Played</h3>
           <div className="recently-list">
             {recentSongs.map((item, i) => (
               <div
                 key={i}
-                className={`recent-item ${isCurrent(item) ? "active" : ""}`}
+                className={`recent-item ${
+                  isCurrent(item) ? "active" : ""
+                }`}
                 onClick={() => handlePlayClick(item)}
               >
                 <img
@@ -295,10 +251,12 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
           </div>
         </div>
 
+        {/* Playlist Songs */}
         <div className="banner-right">
           <h3>Songs</h3>
           <div className="song-list">
             {playlistSongs.length === 0 && <p>No songs available.</p>}
+
             {playlistSongs.map((ps, i) => (
               <div
                 key={i}
@@ -319,6 +277,9 @@ export default function SongPage({ playlistSongs = [], openPanel }) {
           </div>
         </div>
       </div>
+
+      {/* Toast */}
+      {localToast && <div className="toast-popup">{localToast}</div>}
     </div>
   );
 }
