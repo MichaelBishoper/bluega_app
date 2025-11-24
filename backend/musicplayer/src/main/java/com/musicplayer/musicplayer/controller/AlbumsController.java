@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musicplayer.musicplayer.model.Albums;
 import com.musicplayer.musicplayer.service.AlbumsService;
 import com.musicplayer.musicplayer.service.SongsService;
+import com.musicplayer.musicplayer.service.S3Service;
+import com.musicplayer.musicplayer.repository.AlbumsRepository;
 
 import java.io.IOException;
 import java.util.List;     
@@ -21,6 +23,12 @@ public class AlbumsController {
 
     @Autowired
     private SongsService songsService;
+
+    @Autowired
+    private AlbumsRepository albumsRepository;
+
+    @Autowired 
+    private S3Service s3Service;
 
     @GetMapping
     public List<Albums> getAllAlbums(){ 
@@ -39,10 +47,21 @@ public class AlbumsController {
 
     @PostMapping
     public Albums createAlbum(
-            @RequestBody Albums albumRequest,
-            @RequestParam("userId") String userId
-    ) {
-        return albumsService.createAlbum(albumRequest, userId);
+            @RequestPart("albumData") String albumData,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
+    ) throws IOException {
+
+        Albums album = new ObjectMapper().readValue(albumData, Albums.class);
+
+        Albums saved = albumsRepository.save(album);
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String url = s3Service.uploadAlbumCover(imageFile, album.getType(), saved.getId());
+            saved.setImgUrl(url);
+            saved = albumsRepository.save(saved);
+        }
+
+        return saved;
     }
 
 

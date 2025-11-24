@@ -20,39 +20,49 @@ public class S3Service {
     @Autowired
     private AmazonS3 s3Client;
 
-    public String uploadSong(MultipartFile file, String albumType, String albumId) {
-        try {
-            // sanitize albumType
-            String typeFolder = albumType.toLowerCase();
-            if (!typeFolder.equals("single") && !typeFolder.equals("ep") && !typeFolder.equals("lp")) {
-                throw new IllegalArgumentException("Invalid album type: " + albumType);
-            }
+private String uploadToS3(MultipartFile file, String key) {
+    try {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType() != null ? file.getContentType() : "application/octet-stream");
 
-            // Folder Pathing for S3
-            String folder = "music/" + typeFolder + "/" + albumId;
+        s3Client.putObject(new PutObjectRequest(bucketName, key, file.getInputStream(), metadata));
+        return s3Client.getUrl(bucketName, key).toString();
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to upload file", e);
+    }
+}
 
-            // Generate Unique Filename using currentTimeMillis Prikitiwwww
-            String fileName = folder + "/" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(file.getSize());
-            metadata.setContentType(file.getContentType());
-
-            s3Client.putObject(new PutObjectRequest(
-                    bucketName,
-                    fileName,
-                    file.getInputStream(),
-                    metadata
-            ));
-
-            return s3Client.getUrl(bucketName, fileName).toString();
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upload file", e);
-        }
+public String uploadSong(MultipartFile file, String albumType, String albumId) {
+    // sanitize albumType
+    String typeFolder = albumType.toLowerCase();
+    if (!typeFolder.equals("single") && !typeFolder.equals("ep") && !typeFolder.equals("lp")) {
+        throw new IllegalArgumentException("Invalid album type: " + albumType);
     }
 
-    public void deleteFile(String fileUrl) {
+    String folder = "music/" + typeFolder + "/" + albumId;
+    String key = folder + "/" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+    return uploadToS3(file, key);
+}
+
+public String uploadAlbumCover(MultipartFile file, String albumType, String albumId) {
+    // sanitize albumType (reuse same validation)
+    String typeFolder = albumType.toLowerCase();
+    if (!typeFolder.equals("single") && !typeFolder.equals("ep") && !typeFolder.equals("lp")) {
+        throw new IllegalArgumentException("Invalid album type: " + albumType);
+    }
+
+    String key = String.format("albums/%s/%s/cover/%d_%s",
+            typeFolder,
+            albumId,
+            System.currentTimeMillis(),
+            file.getOriginalFilename());
+
+    return uploadToS3(file, key);
+}
+
+public void deleteFile(String fileUrl) {
         // Extract the key from the URL
         String bucketUrl = "https://" + bucketName + ".s3.amazonaws.com/";
         String key = fileUrl.replace(bucketUrl, "");
