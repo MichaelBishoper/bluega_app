@@ -2,7 +2,7 @@ package com.musicplayer.musicplayer.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+// import org.springframework.web.multipart.MultipartFile;
 
 import com.musicplayer.musicplayer.model.Albums;
 import com.musicplayer.musicplayer.model.Songs; // Import Songs
@@ -55,16 +55,27 @@ public class AlbumsService {
 
         return songs;
     }
-
-     public Albums createAlbum(Albums albumRequest) {
-        // validate album type
+    // Create Initial Empty Album
+    public Albums createAlbum(Albums albumRequest, String userId) {
         String type = albumRequest.getType().toLowerCase();
         if (!type.equals("single") && !type.equals("ep") && !type.equals("lp")) {
             throw new IllegalArgumentException("Invalid album type: " + albumRequest.getType());
         }
-        if (albumRequest.getSongs() == null)
-            albumRequest.setSongs(new ArrayList<>());
-        return albumsRepository.save(albumRequest); 
+        albumRequest.setUserId(userId);    
+        albumRequest.setSongs(new ArrayList<>());
+        return albumsRepository.save(albumRequest);
+    }
+    // Add Song to Album
+    public Albums addSongToAlbum(String albumId, Songs createdSong, int order) {
+        Albums album = albumsRepository.findById(albumId)
+            .orElseThrow(() -> new RuntimeException("Album not found"));
+
+        album.getSongs().add(new Albums.AlbumSong(
+                createdSong.getId(),
+                createdSong.getTitle(),
+                order
+        ));
+        return albumsRepository.save(album);
     }
 
     public Albums updateAlbum(String id, Albums newAlbum) {
@@ -78,25 +89,19 @@ public class AlbumsService {
             .orElse(null);
     }
 
-    // DELETE ALBUM
+    // Delete Album
     public void deleteAlbum(String albumId) {
-
         Albums album = albumsRepository.findById(albumId)
             .orElseThrow(() -> new RuntimeException("Album not found"));
-
-        // OPTIONAL: Delete songs from DB + S3
         for (Albums.AlbumSong albumSong : album.getSongs()) {
-            String songId = albumSong.getSongId();
-            Songs song = songsRepository.findById(songId).orElse(null);
+            Songs song = songsRepository.findById(albumSong.getSongId())
+                .orElse(null);
             if (song != null) {
-                // delete file from S3
                 s3Service.deleteFile(song.getAudioUrl());
-
-                // delete song from DB
-                songsRepository.deleteById(songId);
+                songsRepository.deleteById(song.getId());
             }
         }
-        // delete album
         albumsRepository.deleteById(albumId);
     }
+
 }
