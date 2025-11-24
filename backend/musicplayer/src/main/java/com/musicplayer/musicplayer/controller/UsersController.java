@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.musicplayer.musicplayer.dto.LoginRequest;
 import com.musicplayer.musicplayer.model.Playlists;
 import com.musicplayer.musicplayer.model.Users;
 import com.musicplayer.musicplayer.service.PlaylistService;
 import com.musicplayer.musicplayer.service.UsersService;
+@CrossOrigin(origins = "http://localhost:3000") // Allow react dev server to access this controller
 @RestController
 @RequestMapping("api/users")
 public class UsersController {
@@ -29,6 +33,12 @@ public class UsersController {
 
     // @Autowired
     // private SongsService songsService;
+
+     @PostMapping("/login")
+    public ResponseEntity<Users> login(@RequestBody LoginRequest request) {
+        Users user = usersService.login(request.getUsername(), request.getPassword());
+        return ResponseEntity.ok(user);
+    }
 
 
     @PostMapping
