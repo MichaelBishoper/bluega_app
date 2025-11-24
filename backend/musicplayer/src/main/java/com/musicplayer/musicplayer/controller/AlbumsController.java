@@ -30,6 +30,8 @@ public class AlbumsController {
     @Autowired 
     private S3Service s3Service;
 
+    // Routes
+
     @GetMapping
     public List<Albums> getAllAlbums(){ 
         return albumsService.getAllAlbums();
@@ -47,14 +49,21 @@ public class AlbumsController {
 
     @PostMapping
     public Albums createAlbum(
+            @RequestParam("userId") String userId,
             @RequestPart("albumData") String albumData,
             @RequestPart(value = "image", required = false) MultipartFile imageFile
     ) throws IOException {
 
+        // Convert JSON string → Albums object
         Albums album = new ObjectMapper().readValue(albumData, Albums.class);
 
+        // Set userId on the album
+        album.setUserId(userId);
+
+        // Save album without image first
         Albums saved = albumsRepository.save(album);
 
+        // If image provided → upload cover to S3
         if (imageFile != null && !imageFile.isEmpty()) {
             String url = s3Service.uploadAlbumCover(imageFile, album.getType(), saved.getId());
             saved.setImgUrl(url);
@@ -63,7 +72,6 @@ public class AlbumsController {
 
         return saved;
     }
-
 
     @PostMapping("/{albumId}/songs")
     public Albums uploadSongToAlbum(
@@ -79,9 +87,9 @@ public class AlbumsController {
     }
 
 
-    @PutMapping("/{id}")
-    public Albums updateAlbum(@PathVariable String id, @RequestBody Albums album) {
-        return albumsService.updateAlbum(id, album);
+    @PutMapping("/{albumId}")
+    public Albums updateAlbum(@PathVariable String albumId, @RequestBody Albums album) {
+        return albumsService.updateAlbum(albumId, album);
     }
 
      @DeleteMapping("/{albumId}")
