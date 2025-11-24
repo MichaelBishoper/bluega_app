@@ -14,10 +14,13 @@ public class Albums {
     private String id;
     private String title;
     private String artist;
+    private String imgUrl;
     // single, ep, lp
     private String type;
     private List<AlbumSong> songs = new ArrayList<>();
     private String userId;
+
+
     // Getter Setter Spam
     public String getId() {
         return id;
@@ -41,6 +44,14 @@ public class Albums {
 
     public void setArtist(String artist) {
         this.artist = artist;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
     public String getType() {
