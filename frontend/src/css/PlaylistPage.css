@@ -1,0 +1,108 @@
+.playlistPage-container {
+  width: 100%;
+  height: 100%;
+  color: white;
+  padding-bottom: 100px; /* space above player bar */
+  overflow-y: auto;
+}
+
+/* --- Banner --- */
+.playlistPage-banner {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  background: linear-gradient(to bottom, #2c2c2c, #1a1a1a);
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.playlistPage-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.4);
+  border: none;
+  padding: 6px 14px;
+  color: white;
+  font-size: 14px;
+  border-radius: 50px;
+  cursor: pointer;
+}
+
+.playlistPage-cover {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.playlistPage-info h1 {
+  font-size: 32px;
+  margin: 0;
+}
+
+.playlistPage-desc {
+  color: #ccc;
+  margin-top: 6px;
+}
+
+.playlistPage-artist {
+  margin-top: 10px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* --- Song List --- */
+.playlistPage-songs {
+  padding: 25px;
+}
+
+.playlistPage-songs h2 {
+  margin-bottom: 15px;
+}
+
+.playlistPage-songRow {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 0;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.playlistPage-songRow:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.playlistPage-index {
+  width: 30px;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.playlistPage-songImg {
+  width: 55px;
+  height: 55px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.playlistPage-songInfo .playlistPage-title {
+  font-size: 15px;
+  margin: 0;
+}
+
+.playlistPage-artistSmall {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.playlistPage-noSongs {
+  opacity: 0.7;
+  margin-top: 20px;
+}
