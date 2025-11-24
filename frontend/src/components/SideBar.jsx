@@ -115,7 +115,7 @@ export default function Sidebar({
   const menuItems = [
     { icon: <Disc size={20} />, label: "Album" },
     { icon: <Heart size={20} />, label: "Liked Music" },
-    { icon: <PlusSquare size={20} />, label: "Add Playlist" },
+    { icon: <PlusSquare size={20} />, label: "New Playlist" },
   ];
 
   return (
