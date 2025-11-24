@@ -1,5 +1,5 @@
 // ===========================================================
-//  FIXED + CLEANED App.js (FINAL VERSION)
+//  FIXED + CLEANED App.js (FINAL)
 // ===========================================================
 import React, { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
@@ -18,12 +18,12 @@ import { MusicProvider, useMusic } from "./data/Music";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { getToken } from "./utils/auth";
+import PlaylistPage from "./pages/PlaylistPage";
 
 import "./App.css";
 
-
 // ===========================================================
-// PRIVATE LAYOUT (AFTER LOGIN)
+// PRIVATE LAYOUT
 // ===========================================================
 function PrivateLayout() {
   const navigate = useNavigate();
@@ -35,53 +35,43 @@ function PrivateLayout() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // ⭐ MAIN FIX: use only ONE STATE to control the panel
+  const [currentPage, setCurrentPage] = useState("home");
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-  // prevent auto-opening after user manually closes panel
   const [panelManuallyClosed, setPanelManuallyClosed] = useState(false);
-
-  // "playlist" or "song"
   const [panelMode, setPanelMode] = useState(null);
 
-  // Audio UI tracking
   const [currentTime, setCurrentTime] = useState(0);
   const [songDuration, setSongDuration] = useState(0);
 
-  // ----------------------------------------------------------
-  // AUDIO EVENTS
-  // ----------------------------------------------------------
   const handleTimeUpdate = () => {
-    if (audioRef.current) setCurrentTime(Math.floor(audioRef.current.currentTime));
+    if (audioRef.current) {
+      setCurrentTime(Math.floor(audioRef.current.currentTime));
+    }
   };
 
   const handleDurationLoad = () => {
-    if (audioRef.current) setSongDuration(Math.floor(audioRef.current.duration));
+    if (audioRef.current) {
+      setSongDuration(Math.floor(audioRef.current.duration));
+    }
   };
 
   const handleSongEnd = () => {
     nextSong();
   };
 
-  // ----------------------------------------------------------
-  // PLAYLIST SELECTED
-  // ----------------------------------------------------------
   const handleSelectPlaylist = (playlist) => {
+    setSelectedPlaylist(playlist);
     setCurrentPlaylist(playlist);
+
+    setCurrentPage("playlist");
 
     setPanelMode("playlist");
     setPanelManuallyClosed(false);
-    setIsPanelOpen(true);         // ⭐ push content immediately
-
-    if (playlist.songs?.length > 0) {
-      playSong(playlist.songs[0], playlist, true);
-      setActiveSongPage(null);
-    }
+    setIsPanelOpen(true);
   };
 
-  // ----------------------------------------------------------
-  // SONG SELECTED
-  // ----------------------------------------------------------
   const handleSelectSong = (song, playlist = null) => {
     playSong(song, playlist, true);
 
@@ -89,12 +79,9 @@ function PrivateLayout() {
     setPanelMode("song");
 
     setPanelManuallyClosed(false);
-    setIsPanelOpen(true);         // ⭐ ensure it ALWAYS pushes content
+    setIsPanelOpen(true);
   };
 
-  // ----------------------------------------------------------
-  // SEEK BAR
-  // ----------------------------------------------------------
   const handleSeek = (ratio) => {
     if (audioRef.current) {
       audioRef.current.currentTime = ratio * audioRef.current.duration;
@@ -102,33 +89,24 @@ function PrivateLayout() {
     }
   };
 
-  // ----------------------------------------------------------
-  // LOGO CLICK → HOME
-  // ----------------------------------------------------------
   const handleLogoClick = () => {
     setActiveSongPage(null);
     setCurrentPlaylist(null);
+    setSelectedPlaylist(null);
+    setCurrentPage("home");
     setIsPanelOpen(false);
   };
 
-  // ----------------------------------------------------------
-  // LOGOUT
-  // ----------------------------------------------------------
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
   };
 
-  // ----------------------------------------------------------
-  // RENDER
-  // ----------------------------------------------------------
   return (
     <div className="app-container">
       <Navbar onLogoClick={handleLogoClick} onLogout={handleLogout} />
 
       <div className="main-layout">
-
-        {/* SIDEBAR */}
         <Sidebar
           playlists={sidebarPlaylists}
           onSelectPlaylist={handleSelectPlaylist}
@@ -136,9 +114,16 @@ function PrivateLayout() {
           setIsOpen={setIsSidebarOpen}
         />
 
-        {/* MAIN CONTENT */}
         <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
-          {!activeSongPage ? (
+          {currentPage === "playlist" && selectedPlaylist ? (
+            <PlaylistPage
+              playlist={selectedPlaylist}
+              onBack={() => setCurrentPage("home")}
+              onSelectSong={(song) =>
+                handleSelectSong(song, selectedPlaylist)
+              }
+            />
+          ) : !activeSongPage ? (
             <MainLayout
               playlists={samplePlaylists}
               onSelect={handleSelectPlaylist}
@@ -149,10 +134,13 @@ function PrivateLayout() {
               song={activeSongPage}
               playlistSongs={currentPlaylist?.songs || []}
               onBack={() => setActiveSongPage(null)}
+              openPanel={() => {
+                setPanelManuallyClosed(false);
+                setIsPanelOpen(true);
+              }}
             />
           )}
 
-          {/* AUDIO ELEMENT */}
           <audio
             ref={audioRef}
             src={currentSong?.src || ""}
@@ -163,7 +151,6 @@ function PrivateLayout() {
           />
         </main>
 
-        {/* RIGHT PANEL */}
         <RightPanel
           playlist={currentPlaylist}
           selectedSong={currentSong}
@@ -177,7 +164,6 @@ function PrivateLayout() {
         />
       </div>
 
-      {/* PLAYER BAR */}
       <PlayerBar
         current={currentSong}
         isPlaying={isPlaying}
@@ -192,7 +178,6 @@ function PrivateLayout() {
   );
 }
 
-
 // ===========================================================
 // ROUTES
 // ===========================================================
@@ -202,13 +187,16 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} />
+
+        {/* FIXED: removed conflicts */}
+        <Route
+          path="/profile"
+          element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />}
+        />
 
         <Route
           path="/"
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
-        />
-        <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} 
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />

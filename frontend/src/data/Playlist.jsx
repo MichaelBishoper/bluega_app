@@ -1,3 +1,5 @@
+// src/data/playlist.jsx
+
 export const samplePlaylists = [
   {
     id: 1,
@@ -7,6 +9,9 @@ export const samplePlaylists = [
     description: "Calm beats to relax and study.",
     lyrics: "🎧 Instrumental - No lyrics",
     group: "Chilled Cow",
+
+    // 👇 REQUIRED — list of songs inside this playlist
+    songs: [],
   },
   {
     id: 2,
@@ -16,6 +21,8 @@ export const samplePlaylists = [
     description: "Smooth jazz for your late nights.",
     lyrics: "🎷 Instrumental - No lyrics",
     group: "Blue Note Records",
+
+    songs: [],
   },
   {
     id: 3,
@@ -25,6 +32,8 @@ export const samplePlaylists = [
     description: "Classic rock hits from the 70s, 80s, and 90s.",
     lyrics: "🎸 Feel the power of rock and roll!",
     group: "Epic Records",
+
+    songs: [],
   },
   {
     id: 4,
@@ -34,7 +43,10 @@ export const samplePlaylists = [
     description: "Dreamy chillwave tunes for night drives.",
     lyrics: "🌙 Synth vibes and retro soundscapes.",
     group: "Midnight Collective",
+
+    songs: [],
   },
 ];
 
+// 👇 Sidebar uses the SAME playlists
 export const sidebarPlaylists = samplePlaylists;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import "../css/RightPanel.css";
 import { useMusic } from "../data/Music";
 
@@ -8,22 +8,18 @@ export default function RightPanel({
   selectedSong,
   onClose,
   panelManuallyClosed,
-  isPanelOpen,         // ✅ FIXED: now received from App.js
+  isPanelOpen,
 }) {
   const { currentSong, isPlaying } = useMusic();
 
   const [collapsed, setCollapsed] = useState(false);
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [reopenVisible, setReopenVisible] = useState(false);
 
-  /* ============================================================
-     MODE (SONG > PLAYLIST)
-  ============================================================ */
   const hasSong = currentSong !== null;
   const hasPlaylist = playlist !== null;
 
   const mode = hasSong ? "song" : hasPlaylist ? "playlist" : null;
-
   const data =
     mode === "song"
       ? currentSong
@@ -31,43 +27,42 @@ export default function RightPanel({
       ? playlist
       : null;
 
-  /* ============================================================
-     AUTO OPEN WHEN SONG / PLAYLIST CHANGES
-  ============================================================ */
+  /* Sync with parent state */
   useEffect(() => {
-    if (!panelManuallyClosed && data) {
+    if (isPanelOpen) {
+      setVisible(true);
+      setCollapsed(false);
+      setReopenVisible(false);
+    } else {
+      setVisible(false);
+      setTimeout(() => setReopenVisible(true), 300);
+    }
+  }, [isPanelOpen]);
+
+  /* Auto open on data change */
+  useEffect(() => {
+    if (data && !panelManuallyClosed) {
       setVisible(true);
       setCollapsed(false);
       setReopenVisible(false);
     }
   }, [data, panelManuallyClosed]);
 
-  /* ============================================================
-     CLOSE ACTION
-  ============================================================ */
+  /* Close */
   const handleClose = () => {
     setVisible(false);
-
     setTimeout(() => setReopenVisible(true), 300);
-
     if (onClose) onClose();
   };
 
-  /* ============================================================
-     MANUAL REOPEN
-  ============================================================ */
   const handleReopen = () => {
     setVisible(true);
     setCollapsed(false);
     setReopenVisible(false);
   };
 
-  /* ============================================================
-     PANEL RENDER
-  ============================================================ */
   return (
     <>
-      {/* Small reopen button */}
       {reopenVisible && (
         <button className="right-panel-reopen-btn" onClick={handleReopen}>
           <ChevronLeft size={20} />
@@ -82,7 +77,7 @@ export default function RightPanel({
             ${collapsed ? "collapsed" : ""}
           `}
         >
-          {/* Collapse toggle */}
+          {/* Collapse Button */}
           <button
             className="right-toggle-btn"
             onClick={() => setCollapsed((prev) => !prev)}
@@ -90,13 +85,17 @@ export default function RightPanel({
             {collapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
           </button>
 
-          {/* Close Button */}
+          {/* CLOSE BUTTON (VISIBLE) */}
           <button className="close-btn" onClick={handleClose}>
-            <X size={16} />
+            X
           </button>
 
-          {/* Panel Content */}
-          <div className="panel-content">   {/* ✅ FIXED: a clean content wrapper */}
+          {/* Click side area close */}
+          {!collapsed && (
+            <button className="panel-close-area" onClick={handleClose} />
+          )}
+
+          <div className="panel-content">
             {mode === "song" && (
               <>
                 <img
@@ -134,7 +133,7 @@ export default function RightPanel({
 
                 <p className="panel-text">
                   <strong>Description:</strong>{" "}
-                  {data.description || "No description available."}
+                  {data.description || "No description."}
                 </p>
               </>
             )}
