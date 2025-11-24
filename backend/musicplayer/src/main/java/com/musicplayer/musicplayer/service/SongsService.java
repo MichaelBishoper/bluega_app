@@ -6,15 +6,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.musicplayer.musicplayer.model.Albums;
 import com.musicplayer.musicplayer.model.Playlists;
 import com.musicplayer.musicplayer.model.Songs;
 import com.musicplayer.musicplayer.repository.PlaylistsRepository;
 import com.musicplayer.musicplayer.repository.SongsRepository;
+import com.musicplayer.musicplayer.repository.AlbumsRepository;
 
 @Service
 public class SongsService {
     @Autowired
     private SongsRepository songsRepository;
+
+    @Autowired
+    private AlbumsRepository albumsRepository;
 
     @Autowired //used in deleteSong to remove song from playlists when deleted
     private PlaylistsRepository playlistsRepository;
@@ -30,10 +35,28 @@ public class SongsService {
         return songsRepository.findById(id).orElse(null);
     }
 
-    public Songs addSong(Songs song, MultipartFile audioFile, String albumId, String albumType) {
+   public Songs addSong(Songs song, MultipartFile audioFile, String albumId, String userId, int order) {
+
+        // 1. Fetch album to retrieve albumType
+        Albums album = albumsRepository.findById(albumId)
+            .orElseThrow(() -> new RuntimeException("Album not found"));
+
+        String albumType = album.getType();  // single, ep, lp
+
+        // 2. Upload using albumType (required by your S3 structure)
         String audioUrl = s3Service.uploadSong(audioFile, albumType, albumId);
+
+        // 3. Set metadata
         song.setAudioUrl(audioUrl);
-        return songsRepository.save(song); // now MongoDB auto-generates the _id
+        song.setUserId(userId);
+
+        // 4. Save song
+        Songs saved = songsRepository.save(song);
+
+        // // 5. Add to album **using the real order**
+        // albumsService.addSongToAlbum(albumId, saved, order);
+
+        return saved;
     }
 
     public Songs updateSong(String id, Songs newSong) {

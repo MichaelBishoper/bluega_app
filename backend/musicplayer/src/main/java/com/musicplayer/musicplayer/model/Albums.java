@@ -1,5 +1,5 @@
 package com.musicplayer.musicplayer.model;
-
+import java.util.ArrayList;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -9,79 +9,115 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true) // Prevents mapping errors from unknown fields
 @Document(collection = "albums")
 public class Albums {
+
     @Id
     private String id;
     private String title;
     private String artist;
-    private String type; 
-    private List<AlbumSong> songs;
+    private String imgUrl;
+    // single, ep, lp
+    private String type;
+    private List<AlbumSong> songs = new ArrayList<>();
+    private String userId;
 
-    // Nested class to hold songIDs and ordering within an album
-    public static class AlbumSong {
-        private String songId;
-        private int order;
 
-        public AlbumSong() {}
-        
-        public AlbumSong(String songId, int order) {
-            this.songId = songId;
-            this.order = order;
-        }
-        // Constructors
-        public void setSongId(String songId) {
-            this.songId = songId;
-        }
-        public String getSongId() {
-            return songId;
-        }
-        public void setOrder(int order) {
-            this.order = order;
-        }
-        public int getOrder() {
-            return order;
-        }
+    // Getter Setter Spam
+    public String getId() {
+        return id;
     }
 
-    public Albums() {}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public Albums(String title, String artist, List<AlbumSong> songs, String type) {
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
         this.title = title;
-        this.artist = artist;
-        this.songs = songs;
-        this.type = type;
+    }
+
+    public String getArtist() {
+        return artist;
     }
 
     public void setArtist(String artist) {
         this.artist = artist;
     }
-    public String getArtist() {
-        return artist;
+
+    public String getImgUrl() {
+        return imgUrl;
     }
-    public void setId(String id) {
-        this.id = id;
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
-    public String getId() {
-        return id;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    public String getTitle() {
-        return title;
-    }
-    public void setSongs(List<AlbumSong> songs) {
-        this.songs = songs;
-    }
-    public List<AlbumSong> getSongs() {
-        return songs;
-    }
-    public void setType(String type) {
-        this.type = type;
-    }
+
     public String getType() {
         return type;
     }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public List<AlbumSong> getSongs() {
+        return songs;
+    }
+
+    public void setSongs(List<AlbumSong> songs) {
+        this.songs = songs;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public static class AlbumSong {
+        private String songId;   // references Songs.id
+        private String title;    // store title so album retrieval is fast
+        private int order;       // track number
+
+
+        public AlbumSong() {}
+
+        public AlbumSong(String songId, String title, int order) {
+            this.songId = songId;
+            this.title = title;
+            this.order = order;
+        }
+
+         public String getSongId() {
+            return songId;
+        }
+
+        public void setSongId(String songId) {
+            this.songId = songId;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public int getOrder() {
+            return order;
+        }
+
+        public void setOrder(int order) {
+            this.order = order;
+        }
+    }
 }
+
 
 
 
