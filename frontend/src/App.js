@@ -261,6 +261,7 @@ export default function App() {
           element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />}
         />
 
+
         <Route
           path="/"
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}

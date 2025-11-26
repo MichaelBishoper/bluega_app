@@ -47,7 +47,7 @@ public class AlbumsController {
         return albumsService.getSongsFromAlbum(id);
     }
 
-    @PostMapping
+    @PostMapping // Create Container Album
     public Albums createAlbum(
             @RequestParam("userId") String userId,
             @RequestPart("albumData") String albumData,
@@ -73,7 +73,7 @@ public class AlbumsController {
         return saved;
     }
 
-    @PostMapping("/{albumId}/songs")
+    @PostMapping("/{albumId}/songs") // Add Songs to Album
     public Albums uploadSongToAlbum(
         @PathVariable String albumId,
         @RequestParam("songData") String songData,
