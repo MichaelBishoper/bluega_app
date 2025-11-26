@@ -12,6 +12,7 @@ import "../css/SideBar.css";
 export default function Sidebar({
   playlists = [],
   onSelectPlaylist = () => {},
+  onCreatePlaylist = () => {}, 
 
   isOpen: externalOpen,
   setIsOpen: externalSetOpen,
@@ -113,10 +114,14 @@ export default function Sidebar({
   const FALLBACK_IMAGE_URL = "/placeholder-cover.png";
 
   const menuItems = [
-    { icon: <Disc size={20} />, label: "Album" },
-    { icon: <Heart size={20} />, label: "Liked Music" },
-    { icon: <PlusSquare size={20} />, label: "New Playlist" },
-  ];
+  { icon: <Disc size={20} />, label: "Album" },
+  { icon: <Heart size={20} />, label: "Liked Music" },
+  {
+    icon: <PlusSquare size={20} />,
+    label: "New Playlist",
+    action: () => onCreatePlaylist(),
+  },
+];
 
   return (
     <aside
@@ -132,13 +137,19 @@ export default function Sidebar({
         </button>
       </div>
 
-      <nav className="menu">
+       <nav className="menu">
         <ul>
           {menuItems.map((item, i) => (
-            <li key={i} className="menu-item">
-              {item.icon}
-              {isSidebarOpen && <span>{item.label}</span>}
-            </li>
+            <li
+  key={i}
+  className="menu-item"
+  onClick={() => item.action && item.action()}
+  style={{ cursor: item.action ? "pointer" : "default" }}
+>
+  {item.icon}
+  {isSidebarOpen && <span>{item.label}</span>}
+</li>
+
           ))}
         </ul>
       </nav>
