@@ -17,7 +17,7 @@ import { MusicProvider, useMusic } from "./data/Music";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import { getToken } from "./utils/auth";
+import { getToken, logout } from "./utils/auth";
 import PlaylistPage from "./pages/PlaylistPage";
 
 import "./App.css";
@@ -128,10 +128,7 @@ function PrivateLayout() {
     setIsPanelOpen(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
+  const handleLogout = () => logout(); // call the logout function from auth.js
 
   return (
     <div className="app-container">
@@ -266,7 +263,7 @@ export default function App() {
           path="/"
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
         />
-        <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} />
+
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

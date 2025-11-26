@@ -52,27 +52,23 @@
 
 
 import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom"; 
 
 export default function Login() {
-  const [username, setUsername] = useState(""); // changed email to username (we login using)
+  const [username, setUsername] = useState(""); 
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Cek apakah user sudah login
-  const token = localStorage.getItem("token");
+  // Check if user is already logged in
+  const token = sessionStorage.getItem("token");
   if (token) {
-    // Kalau sudah login, langsung lempar ke Home
+    // Redirect to home page if already logged in
     return <Navigate to="/" replace />;
   }
 
   // Temporary local account (for frontend-only testing)
   const tempAccounts = [
-    // { email: "admin@test.com", password: "123456", role: "admin" },
-    // { email: "user@test.com", password: "akuganteng", role: "user" }
-
-    
     { username: "user", password:"123456"} // we dont have roles in backend OK!
   ];
 
@@ -96,9 +92,9 @@ export default function Login() {
 
     const user = await res.json();
 
-    // backend does not send a token yet – create a dummy one so your app knows you're "logged in"
-    localStorage.setItem("token", "temporary-token");
-    localStorage.setItem("user", JSON.stringify(user));
+    // we use sessionStorage to store token and user info, since we dont have real tokens from backend
+    sessionStorage.setItem("token", "temporary-token");
+    sessionStorage.setItem("user", JSON.stringify(user));
 
     window.location.href = "/";
     return;
@@ -111,8 +107,8 @@ export default function Login() {
       );
 
       if (user) {
-        localStorage.setItem("token", "temporary-token");
-        localStorage.setItem("user", JSON.stringify(user));
+        sessionStorage.setItem("token", "temporary-token");
+        sessionStorage.setItem("user", JSON.stringify(user));
         window.location.href = "/";
         return;
       }
@@ -168,6 +164,10 @@ export default function Login() {
         {error && (
           <div style={{ color: "red", marginTop: "1rem" }}>{error}</div>
         )}
+
+        <div style={{ marginTop: "1rem" }}>
+        <p> don't have an account? <Link to="/signup" style={{ color: "#4caf50", fontWeight: "bold" }}>Sign up here</Link></p> 
+        </div>
 
         <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#ffffffff" }}>
           <p>💡 Temporary accounts you can use:</p>
