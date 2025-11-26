@@ -93,8 +93,8 @@ export default function Login() {
     const user = await res.json();
 
     // we use sessionStorage to store token and user info, since we dont have real tokens from backend
-    sessionStorage.setItem("token", "temporary-token");
-    sessionStorage.setItem("user", JSON.stringify(user));
+    // sessionStorage.setItem("token", "temporary-token"); // in real app, use token from backend
+    sessionStorage.setItem("user", JSON.stringify(user)); // this sets the entire user object from backend to sessionStorage
 
     window.location.href = "/";
     return;
