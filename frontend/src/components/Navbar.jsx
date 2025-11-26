@@ -35,9 +35,8 @@ export default function Navbar({ onLogoClick, onLogout }) {
         </div>
       </div>
 
-      {/* Right Section → jadi logout */}
+      {/* Right Section */}
       <div className="navbar-right">
-        {/* New: profile icon (opens profile page) */}
         <button
           className="profile-icon-btn"
           onClick={handleProfileClick}
