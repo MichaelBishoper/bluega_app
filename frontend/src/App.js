@@ -35,6 +35,8 @@ function PrivateLayout() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  const [userPlaylists, setUserPlaylists] = useState(sidebarPlaylists || []);
+
   const [currentPage, setCurrentPage] = useState("home");
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
@@ -89,6 +91,35 @@ function PrivateLayout() {
     }
   };
 
+ const handleCreatePlaylist = () => {
+    const newPlaylist = {
+      id: `pl-${Date.now()}`,
+      title: "New Playlist",
+      description: "New playlist (mock)",
+      image: "",
+      artist: "",
+      songs: [
+        {
+          id: `s-${Date.now()}`,
+          title: "New Song",
+          artist: "Unknown",
+          image: "",
+          src: "",
+        },
+      ],
+    };
+
+    setUserPlaylists((prev) => [newPlaylist, ...prev]);
+
+    setSelectedPlaylist(newPlaylist);
+    setCurrentPlaylist(newPlaylist);
+    setCurrentPage("playlist");
+
+    setPanelMode("playlist");
+    setPanelManuallyClosed(false);
+    setIsPanelOpen(true);
+  };
+
   const handleLogoClick = () => {
     setActiveSongPage(null);
     setCurrentPlaylist(null);
@@ -110,6 +141,7 @@ function PrivateLayout() {
         <Sidebar
           playlists={sidebarPlaylists}
           onSelectPlaylist={handleSelectPlaylist}
+          onCreatePlaylist={handleCreatePlaylist}
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
         />
@@ -122,7 +154,42 @@ function PrivateLayout() {
               onSelectSong={(song) =>
                 handleSelectSong(song, selectedPlaylist)
               }
+
+              onAddSong={(playlistId) => {
+                // mock add song: push a dummy song to selected playlist
+                const newSong = {
+                  id: `s-${Date.now()}`,
+                  title: "Added Song",
+                  artist: "Unknown",
+                  image: "",
+                  src: "",
+                };
+                // update userPlaylists and selected/current playlist
+                setUserPlaylists((prev) =>
+                  prev.map((p) =>
+                    p.id === playlistId ? { ...p, songs: [...(p.songs||[]), newSong] } : p
+                  )
+                );
+                if (selectedPlaylist && selectedPlaylist.id === playlistId) {
+                  const updated = { ...selectedPlaylist, songs: [...(selectedPlaylist.songs||[]), newSong] };
+                  setSelectedPlaylist(updated);
+                  setCurrentPlaylist(updated);
+                }
+              }}
+              onRemoveSong={(playlistId, songId) => {
+                setUserPlaylists((prev) =>
+                  prev.map((p) =>
+                    p.id === playlistId ? { ...p, songs: (p.songs || []).filter(s => s.id !== songId) } : p
+                  )
+                );
+                if (selectedPlaylist && selectedPlaylist.id === playlistId) {
+                  const updated = { ...selectedPlaylist, songs: (selectedPlaylist.songs || []).filter(s => s.id !== songId) };
+                  setSelectedPlaylist(updated);
+                  setCurrentPlaylist(updated);
+                }
+              }}
             />
+            
           ) : !activeSongPage ? (
             <MainLayout
               playlists={samplePlaylists}
@@ -189,7 +256,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
 
         {/* FIXED: removed conflicts */}
-        <Route
+         <Route
           path="/profile"
           element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />}
         />
@@ -198,6 +265,7 @@ export default function App() {
           path="/"
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
         />
+        <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
