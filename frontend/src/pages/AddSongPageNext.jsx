@@ -3,13 +3,19 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function AddSongPageNext() {
-    const { state } = useLocation();
+    const location = useLocation();
+    const state = location.state;
+    if (!state) {
+        return <p>Error: No album information provided.</p>;
+    }
+
     const { songCount, albumId, userId } = state;
 
     const [songs, setSongs] = useState(
         Array.from({ length: songCount }, () => ({
             name: "",
-            file: null
+            file: null,
+            uploaded: false
         }))
     );
 
@@ -25,41 +31,55 @@ export default function AddSongPageNext() {
         setSongs(updated);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const uploadSingleSong = async (i) => {
+        const song = songs[i];
 
-        for (let i = 0; i < songs.length; i++) {
-            const formData = new FormData();
-            formData.append("name", songs[i].name);
-            formData.append("file", songs[i].file);
-
-            const order = i + 1;
-
-            await axios.post(
-                `http://localhost:8080/api/albums/${albumId}`,
-                formData,
-                {
-                    params: {
-                        userId: userId,
-                        order: order
-                    },
-                    headers: { "Content-Type": "multipart/form-data" }
-                }
-            );
+        if (!song.name || !song.file) {
+            alert("Please enter name and choose a file.");
+            return;
         }
-        alert("Songs uploaded!");
+
+        const formData = new FormData();
+
+        // Backend wants:
+        // songData = JSON string
+        formData.append("songData", JSON.stringify({ name: song.name }));
+
+        // audio = the file
+        formData.append("audio", song.file);
+
+        const order = i + 1;
+
+        await axios.post(
+            `http://localhost:8080/api/albums/${albumId}/songs`,
+            formData,
+            {
+                params: {
+                    order: order,
+                    userId: userId
+                },
+                headers: { "Content-Type": "multipart/form-data" }
+            }
+        );
+
+        const updated = [...songs];
+        updated[i].uploaded = true;
+        setSongs(updated);
+
+        alert(`Uploaded song ${order}`);
     };
 
     return (
-        <form className="add-songs-to-album" onSubmit={handleSubmit}>
+        <div className="add-songs-to-album">
             {songs.map((song, index) => (
-                <div key={index} style={{ marginBottom: "20px" }}>
+                <div key={index} style={{ marginBottom: "25px" }}>
                     <h3>Song {index + 1}</h3>
 
                     <label>Name:</label>
                     <input
                         type="text"
                         value={song.name}
+                        disabled={song.uploaded}
                         onChange={(e) =>
                             handleNameChange(index, e.target.value)
                         }
@@ -71,14 +91,28 @@ export default function AddSongPageNext() {
                     <input
                         type="file"
                         accept="audio/*"
+                        disabled={song.uploaded}
                         onChange={(e) =>
                             handleFileChange(index, e.target.files[0])
                         }
                     />
+
+                    <br />
+
+                    <button
+                        onClick={() => uploadSingleSong(index)}
+                        disabled={song.uploaded}
+                        style={{
+                            marginTop: "10px",
+                            backgroundColor: song.uploaded ? "gray" : "blue",
+                            color: "white",
+                            padding: "5px 12px"
+                        }}
+                    >
+                        {song.uploaded ? "Uploaded ✓" : "Upload Song"}
+                    </button>
                 </div>
             ))}
-
-            <button type="submit">Upload All Songs</button>
-        </form>
+        </div>
     );
 }

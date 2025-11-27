@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function AddSongPage() {
     const [title, setTitle] = useState(""); // -> Album NAME
@@ -7,6 +8,8 @@ export default function AddSongPage() {
     const [songCount, setSongCount] = useState("");  // -> Song COUNT
     const [coverFile, setCoverFile] = useState(null); // -> Album COVER IMAGE
     const [previewUrl, setPreviewUrl] = useState(null); // -> Preview COVER IMAGE
+
+    const navigate = useNavigate();
 
     const userId = "6904dbd7895a745ddce4f1da";
 
@@ -37,10 +40,18 @@ export default function AddSongPage() {
                 }
             );
 
+            const createdAlbumId = res.data.id; 
+
             console.log("Album created:", res.data);
             alert("Container album created successfully!");
 
-            // Redirect to next page -> song upload
+            navigate("/add-song/next", {
+                state: {
+                    songCount: Number(songCount),
+                    albumId: createdAlbumId,
+                    userId: userId
+                }
+            });
 
         } catch (err) {
             console.error(err)
@@ -56,19 +67,20 @@ export default function AddSongPage() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                required
             />
             <br />
 
             Type:
-            <input type="radio" name="album" value="single"
+            <input type="radio" name="album" value="single" required
                 onChange={(e) => setType(e.target.value)} />
             Single
 
-            <input type="radio" name="album" value="ep"
+            <input type="radio" name="album" value="ep" required
                 onChange={(e) => setType(e.target.value)} />
             EP
 
-            <input type="radio" name="album" value="lp"
+            <input type="radio" name="album" value="lp" required
                 onChange={(e) => setType(e.target.value)} />
             LP
             <br />
@@ -78,6 +90,7 @@ export default function AddSongPage() {
                 type="number"
                 value={songCount}
                 onChange={(e) => setSongCount(e.target.value)}
+                required
             />
             <br />
 
@@ -85,6 +98,7 @@ export default function AddSongPage() {
             <input
                 type="file"
                 accept="image/*"
+                required
                 onChange={(e) => {
                     const file = e.target.files[0];
                     setCoverFile(file);

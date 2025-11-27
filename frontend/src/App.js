@@ -11,6 +11,8 @@ import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
 import SongPage from "./pages/SongPage";
 import ProfilePage from "./pages/ProfilePage";
+import AddSongPage from "./pages/AddSongPage";
+import AddSongPageNext from "./pages/AddSongPageNext";
 
 import { sidebarPlaylists, samplePlaylists } from "./data/Playlist";
 import { MusicProvider, useMusic } from "./data/Music";
@@ -258,13 +260,14 @@ export default function App() {
           element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />}
         />
 
-
         <Route
           path="/"
           element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
         />
 
-
+        <Route path="/add-song" element={<AddSongPage />} />
+        <Route path="/add-song/next" element={<AddSongPageNext />} />
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MusicProvider>
