@@ -4,6 +4,6 @@ import AddSongPageNext from "./AddSongPageNext";
 
 export default function ProfilePage() {
     return(
-        < AddSongPageNext />
+        < AddSongPage />
     );
 }
