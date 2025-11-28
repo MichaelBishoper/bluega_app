@@ -121,64 +121,127 @@ export default function Login() {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: "auto", padding: "2rem" }}>
-      <h2>Login</h2>
+  <div 
+    style={{ 
+      maxWidth: 400, 
+      margin: "auto", 
+      padding: "2rem",
+      marginTop: "5vh",        // shift lower
+      marginBottom: "5vh",     // extra space bottom
+      textAlign: "center"      // center everything
+    }}
+  >
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Username</label><br />
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+    {/* Centered Logo */}
+    <Link to="/" style={{ display: "inline-block", marginBottom: "1rem" }}>
+      <img
+        src="picture/bluga.png"
+        alt="Logo"
+        style={{
+          width: "90px",
+          height: "90px",
+          borderRadius: "50%",
+          objectFit: "cover",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
+          cursor: "pointer",
+        }}
+      />
+    </Link>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Password</label><br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
+    <h2 style={{ marginTop: "0.5rem", fontSize: "1.8rem", fontWeight: "600" }}>
+      Login
+    </h2>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "0.7rem",
-            background: "#4caf50",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
+    <form onSubmit={handleSubmit} style={{ marginTop: "1.5rem" }}>
+      
+      {/* Username */}
+      <div style={{ marginBottom: "1.2rem", textAlign: "left" }}>
+        <label style={{ fontWeight: "500" }}>Username</label><br />
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          style={{ 
+      width: "100%", 
+      padding: "0.65rem",        
+      borderRadius: "10px",       
+      border: "1px solid #006adbff",
+      fontSize: "0.95rem",       
+      marginTop: "0.3rem",
+      boxSizing: "border-box"
           }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
+        />
+      </div>
 
-        {error && (
-          <div style={{ color: "red", marginTop: "1rem" }}>{error}</div>
-        )}
+{/* Password */}
+<div style={{ marginBottom: "1.2rem", textAlign: "left" }}>
+  <label style={{ fontWeight: "500" }}>Password</label><br />
+  <input
+    type="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    required
+    style={{ 
+      width: "100%", 
+      padding: "0.65rem",        
+      borderRadius: "10px",       
+      border: "1px solid #006adbff",
+      fontSize: "0.95rem",       
+      marginTop: "0.3rem",
+      boxSizing: "border-box"
+    }}
+  />
+</div>
 
-        <div style={{ marginTop: "1rem" }}>
-        <p> don't have an account? <Link to="/signup" style={{ color: "#4caf50", fontWeight: "bold" }}>Sign up here</Link></p> 
-        </div>
 
-        <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#ffffffff" }}>
-          <p>💡 Temporary accounts you can use:</p>
-          <ul>
-            {/* <li><b>Email:</b> admin@test.com | <b>Password:</b> 123456</li> */}
-            <li><b>username:</b> user | <b>Password:</b> 123456 (inline)</li>
-            <li><b>username:</b> testuser | <b>Password:</b> password (if u are using Rafael's cluster use this one from the db)</li>
-          </ul>
-        </div>
-      </form>
-    </div>
-  );
+<button
+  type="submit"
+  disabled={loading}
+  style={{
+    width: "100%",
+    padding: "0.6rem",      // MATCH password input
+    background: "#2196f3",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",    // MATCH password input
+    cursor: "pointer",
+    fontSize: "1rem",
+    fontWeight: "600",
+    boxSizing: "border-box"
+  }}
+>
+  {loading ? "Logging in..." : "Login"}
+</button>
+
+
+
+      {/* Error */}
+      {error && (
+        <div style={{ color: "red", marginTop: "1rem" }}>{error}</div>
+      )}
+
+      {/* Signup link */}
+      <div style={{ marginTop: "1rem" }}>
+        <p>
+          Don't have an account? 
+          <Link to="/signup" style={{ color: "#2196f3", fontWeight: "bold" }}>
+            {" "}Sign up here
+          </Link>
+        </p>
+      </div>
+
+      {/* Info */}
+      <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#fff" }}>
+        <p>💡 Temporary accounts you can use:</p>
+        <ul style={{ textAlign: "left" }}>
+          <li><b>username:</b> user | <b>Password:</b> 123456 (inline)</li>
+          <li><b>username:</b> testuser | <b>Password:</b> password</li>
+        </ul>
+      </div>
+
+    </form>
+  </div>
+);
+
 }
