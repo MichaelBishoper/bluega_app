@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import"../css/AddSongPage.css"
 
 export default function AddSongPage() {
     const [title, setTitle] = useState(""); // -> Album NAME
@@ -61,6 +62,40 @@ export default function AddSongPage() {
 
     return(
         <form className="create-container-album" onSubmit={handleSubmit}> 
+{/* Logo in center */}
+<div
+  style={{
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "1rem",
+  }}
+>
+  <img
+    src="picture/bluga.png"
+    alt="Logo"
+    style={{
+      width: "75px",
+      height: "75px",
+      borderRadius: "50%",
+      objectFit: "cover",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    }}
+  />
+</div>
+
+{/* Title */}
+<h2
+  style={{
+    fontSize: "1.8rem",
+    marginBottom: "1.5rem",
+    textAlign: "center",
+    fontWeight: "600",
+  }}
+>
+  Add Song
+</h2>
+
             
             <label>Title: </label>
             <input
