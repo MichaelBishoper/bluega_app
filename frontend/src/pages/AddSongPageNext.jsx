@@ -3,6 +3,49 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function AddSongPageNext() {
+    // Add this ABOVE your component or at the bottom of the file:
+
+const styles = {
+    container: {
+        padding: "20px",
+        maxWidth: "600px",
+        margin: "0 auto",
+        fontFamily: "Arial, sans-serif"
+    },
+    songBlock: {
+        marginBottom: "25px",
+        padding: "15px",
+        borderRadius: "8px",
+        border: "1px solid #0334a8ad",
+        backgroundColor: "#000000d0"
+    },
+    label: {
+        fontWeight: "bold",
+        display: "block",
+        marginBottom: "6px",
+        marginTop: "10px"
+    },
+    inputText: {
+        width: "85%",
+        padding: "8px",
+        marginBottom: "10px",
+        borderRadius: "4px",
+        border: "1px solid #ccc"
+    },
+    inputFile: {
+        marginTop: "5px",
+        marginBottom: "10px"
+    },
+    uploadBtn: {
+        marginTop: "10px",
+        color: "white",
+        padding: "8px 14px",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer"
+    }
+};
+
     const location = useLocation();
     const state = location.state;
     if (!state) {
@@ -70,14 +113,15 @@ export default function AddSongPageNext() {
     };
 
     return (
-        <div className="add-songs-to-album">
+        <div style={styles.container}>
             {songs.map((song, index) => (
-                <div key={index} style={{ marginBottom: "25px" }}>
+                <div key={index} style={styles.songBlock}>
                     <h3>Song {index + 1}</h3>
 
-                    <label>Name:</label>
+                    <label style={styles.label}>Name:</label>
                     <input
                         type="text"
+                        style={styles.inputText}
                         value={song.name}
                         disabled={song.uploaded}
                         onChange={(e) =>
@@ -90,6 +134,7 @@ export default function AddSongPageNext() {
                     <label>Upload Audio:</label>
                     <input
                         type="file"
+                        style={styles.inputFile}
                         accept="audio/*"
                         disabled={song.uploaded}
                         onChange={(e) =>
