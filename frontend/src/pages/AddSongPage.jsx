@@ -60,6 +60,10 @@ export default function AddSongPage() {
         }   
     };
 
+    const handleCancel = () => {
+        navigate("/"); // goes to homepage
+    };
+
     return(
         <form className="create-container-album" onSubmit={handleSubmit}> 
 {/* Logo in center */}
@@ -93,7 +97,7 @@ export default function AddSongPage() {
     fontWeight: "600",
   }}
 >
-  Add Song
+  Upload Your Album
 </h2>
 
             
@@ -124,12 +128,20 @@ export default function AddSongPage() {
             <input
                 type="number"
                 value={songCount}
-                onChange={(e) => setSongCount(e.target.value)}
+                onChange={(e) => {
+                    const val = e.target.value.replace(/e/gi, "");
+                    setSongCount(val);
+                }}
+                onKeyDown={(e) => {
+                    if (e.key.toLowerCase() === "e") {
+                    e.preventDefault();     // stops "e" from being typed
+                    }
+                }}
                 required
             />
             <br />
 
-            <label>Upload Cover: </label>
+            <label>Upload Cover: (Size 3000 x 3000)</label>
             <input
                 type="file"
                 accept="image/*"
@@ -165,7 +177,7 @@ export default function AddSongPage() {
             </>
             <br />
 
-            <button type="reset">Cancel</button>
+            <button type="button" onClick={handleCancel}>Cancel</button>
             <button type="submit">Next</button>
 
         </form>

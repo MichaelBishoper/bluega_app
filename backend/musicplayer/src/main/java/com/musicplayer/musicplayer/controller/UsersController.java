@@ -65,7 +65,7 @@ public class UsersController {
         usersService.deleteUser(id);
     }
 
-    @PutMapping("/{userId}/follow/{targetId}") // IMPORTANT DO NOT ADD FOLLOWINGIDS DIRECTLY WITH PUT /API/USERS 
+    @PutMapping("/{userId}/follow/{targetId}") // IMPORTANT DO NOT ADD FOLLOWINGIDS DIRECTLY WITH PUT /API/USERS  // Kalo kasih comment ga usah capital ngab
     public Users followUser(@PathVariable String userId, @PathVariable String targetId) {
         return usersService.followUser(userId, targetId);
     }
