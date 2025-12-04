@@ -48,9 +48,7 @@ const styles = {
 
     const location = useLocation();
     const state = location.state;
-    if (!state) {
-        return <p>Error: No album information provided.</p>;
-    }
+
 
     const { songCount, albumId, userId } = state;
 
@@ -61,6 +59,10 @@ const styles = {
             uploaded: false
         }))
     );
+
+        if (!state) {
+        return <p>Error: No album information provided.</p>;
+    }
 
     const handleNameChange = (i, value) => {
         const updated = [...songs];
