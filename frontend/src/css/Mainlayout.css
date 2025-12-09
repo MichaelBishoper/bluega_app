@@ -51,7 +51,7 @@
 /* Hide scrollbar on Chrome/Safari */
 .scroll-row::-webkit-scrollbar {
   display: none;
-
+  
 }
 
 /* Hide scrollbar on Firefox */

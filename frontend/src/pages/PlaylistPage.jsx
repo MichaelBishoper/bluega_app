@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../css/PlaylistPage.css";
 
 export default function PlaylistPage({
@@ -7,23 +7,45 @@ export default function PlaylistPage({
   onSelectSong,
   onAddSong,
   onRemoveSong,
+  updatePlaylistName,
 }) {
+  // Hooks (always run)
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState("");
+
+  // Sync input when switching playlists
+  useEffect(() => {
+    if (playlist) {
+      setEditedName(playlist.title);
+    }
+  }, [playlist]);
+
+  // Loading protection
   if (!playlist) {
     return <div className="playlistPage-container">Loading playlist...</div>;
   }
 
   const songs = playlist.songs || [];
 
-  // Restrict playing songs ONLY inside the playlist
   const handleSelect = (song) => {
     if (!songs.some((s) => s.id === song.id)) return;
     onSelectSong(song);
   };
 
+  const saveTitle = () => {
+    const trimmed = editedName.trim();
+    if (trimmed === "") return;
+
+    updatePlaylistName(playlist.id, trimmed);
+    setIsEditing(false);
+  };
+
   return (
     <div className="playlistPage-container">
-      {/* TOP BANNER */}
+
+      {/* HEADER */}
       <div className="playlistPage-banner">
+
         <button className="playlistPage-back" onClick={onBack}>
           ← Back
         </button>
@@ -35,11 +57,45 @@ export default function PlaylistPage({
         />
 
         <div className="playlistPage-info">
-          <h1>{playlist.title}</h1>
-          <p className="playlistPage-desc">{playlist.description}</p>
-          {playlist.artist && (
-            <p className="playlistPage-artist">{playlist.artist}</p>
+
+          {/* TITLE EDIT MODE */}
+          {isEditing ? (
+            <div className="edit-title-container">
+
+              <input
+                type="text"
+                className="edit-title-input"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                autoFocus
+              />
+
+              <button className="edit-save-btn" onClick={saveTitle}>
+                Save
+              </button>
+
+              <button
+                className="edit-cancel-btn"
+                onClick={() => {
+                  setEditedName(playlist.title);
+                  setIsEditing(false);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <h1 className="playlist-title-display">
+              {playlist.title}
+              <span
+                className="edit-icon"
+                onClick={() => setIsEditing(true)}
+              >
+                ✏️
+              </span>
+            </h1>
           )}
+
         </div>
       </div>
 
@@ -50,6 +106,7 @@ export default function PlaylistPage({
         {songs.length > 0 ? (
           songs.map((song, index) => (
             <div key={song.id} className="playlistPage-songRow">
+
               <span className="playlistPage-index">{index + 1}</span>
 
               <img
@@ -67,13 +124,13 @@ export default function PlaylistPage({
                 <p className="playlistPage-artistSmall">{song.artist}</p>
               </div>
 
-              {/* REMOVE SONG BUTTON */}
               <button
                 className="playlistPage-removeBtn"
                 onClick={() => onRemoveSong(playlist.id, song.id)}
               >
                 ✕
               </button>
+
             </div>
           ))
         ) : (
@@ -81,13 +138,13 @@ export default function PlaylistPage({
         )}
       </div>
 
-      {/* ADD SONG BUTTON */}
       <button
         className="playlistPage-addBtn"
         onClick={() => onAddSong(playlist.id)}
       >
         + Add Song
       </button>
+
     </div>
   );
 }

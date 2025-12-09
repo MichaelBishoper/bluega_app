@@ -12,8 +12,8 @@ import "../css/SideBar.css";
 export default function Sidebar({
   playlists = [],
   onSelectPlaylist = () => {},
-  onCreatePlaylist = () => {}, 
-
+  onDeletePlaylist,
+  onCreatePlaylist = () => {},
   isOpen: externalOpen,
   setIsOpen: externalSetOpen,
 }) {
@@ -42,9 +42,7 @@ export default function Sidebar({
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
-  // ============================
   // TOUCH START
-  // ============================
   const onTouchStart = (e) => {
     if (!isMobile) return;
 
@@ -61,13 +59,11 @@ export default function Sidebar({
     }
 
     if (dragging.current && sidebarRef.current) {
-      sidebarRef.current.style.transition = "none"; // stop smooth animation while dragging
+      sidebarRef.current.style.transition = "none";
     }
   };
 
-  // ============================
   // TOUCH MOVE
-  // ============================
   const onTouchMove = (e) => {
     if (!dragging.current) return;
 
@@ -91,9 +87,7 @@ export default function Sidebar({
     }
   };
 
-  // ============================
   // TOUCH END
-  // ============================
   const onTouchEnd = () => {
     if (!dragging.current) return;
 
@@ -104,8 +98,8 @@ export default function Sidebar({
 
     const sidebar = sidebarRef.current;
     if (sidebar) {
-      sidebar.style.transition = ""; // restore CSS transitions
-      sidebar.style.transform = ""; // reset so CSS handles state
+      sidebar.style.transition = "";
+      sidebar.style.transform = "";
     }
 
     dragging.current = false;
@@ -114,81 +108,94 @@ export default function Sidebar({
   const FALLBACK_IMAGE_URL = "/placeholder-cover.png";
 
   const menuItems = [
-  { icon: <Disc size={20} />, label: "Album" },
-  { icon: <Heart size={20} />, label: "Liked Music" },
-  {
-    icon: <PlusSquare size={20} />,
-    label: "New Playlist",
-    action: () => onCreatePlaylist(),
-  },
-];
+    { icon: <Disc size={20} />, label: "Album" },
+    { icon: <Heart size={20} />, label: "Liked Music" },
+    {
+      icon: <PlusSquare size={20} />,
+      label: "New Playlist",
+      action: () => onCreatePlaylist(),
+    },
+  ];
 
   return (
-    <aside
-      ref={sidebarRef}
-      className={`sidebar ${isSidebarOpen ? "open" : "collapsed"}`}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      <div className="sidebar-header">
-        <button className="toggle-btn" onClick={toggleSidebar}>
-          {isSidebarOpen ? <ChevronLeft size={18} /> : <Menu size={20} />}
-        </button>
-      </div>
+  <aside
+    ref={sidebarRef}
+    className={`sidebar ${isSidebarOpen ? "open" : "collapsed"}`}
+    onTouchStart={onTouchStart}
+    onTouchMove={onTouchMove}
+    onTouchEnd={onTouchEnd}
+  >
+    <div className="sidebar-header">
+      <button className="toggle-btn" onClick={toggleSidebar}>
+        {isSidebarOpen ? <ChevronLeft size={18} /> : <Menu size={20} />}
+      </button>
+    </div>
 
-       <nav className="menu">
-        <ul>
-          {menuItems.map((item, i) => (
+    <nav className="menu">
+      <ul>
+        {menuItems.map((item) => (
+          <li
+            key={item.label}
+            className="menu-item"
+            onClick={() => item.action && item.action()}
+            style={{ cursor: item.action ? "pointer" : "default" }}
+          >
+            {item.icon}
+            {isSidebarOpen && <span>{item.label}</span>}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <section className="playlist-section">
+      {isSidebarOpen && <h3>Your Playlists</h3>}
+      <ul className="playlist-list">
+        {playlists.length > 0 ? (
+          playlists.map((p) => (
             <li
-  key={i}
-  className="menu-item"
-  onClick={() => item.action && item.action()}
-  style={{ cursor: item.action ? "pointer" : "default" }}
->
-  {item.icon}
-  {isSidebarOpen && <span>{item.label}</span>}
-</li>
+              key={p.id}
+              className="playlist-item"
+              onClick={() => onSelectPlaylist(p)}
+            >
+              <img
+                src={p.image}
+                alt={p.title}
+                onError={(e) => {
+                  e.currentTarget.src = FALLBACK_IMAGE_URL;
+                }}
+              />
 
-          ))}
-        </ul>
-      </nav>
+              {isSidebarOpen && (
+                <div className="playlist-info">
+                  <span className="playlist-title">{p.title}</span>
+                </div>
+              )}
 
-      <section className="playlist-section">
-        {isSidebarOpen && <h3>Your Playlists</h3>}
-        <ul className="playlist-list">
-          {playlists.length > 0 ? (
-            playlists.map((p, i) => (
-              <li
-                key={i}
-                className="playlist-item"
-                onClick={() => onSelectPlaylist(p)}
-              >
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  onError={(e) => {
-                    e.currentTarget.src = FALLBACK_IMAGE_URL;
+              {/* PLAY ICON */}
+              <Play size={14} className="play-icon" />
+
+              {/* DELETE BUTTON */}
+              {isSidebarOpen && (
+                <button
+                  className="delete-playlist-btn"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent opening playlist
+                    onDeletePlaylist(p.id); // Call delete playlist
                   }}
-                />
-                {isSidebarOpen && (
-                  <div className="playlist-info">
-                    <span className="playlist-title">{p.title}</span>
-                    {!!p.artist && (
-                      <span className="playlist-artist">{p.artist}</span>
-                    )}
-                  </div>
-                )}
-                <Play size={14} className="play-icon" />
-              </li>
-            ))
-          ) : (
-            <li className="no-playlist">
-              {isSidebarOpen ? "No playlists yet" : ""}
+                >
+                  ❌
+                </button>
+              )}
             </li>
-          )}
-        </ul>
-      </section>
-    </aside>
-  );
+          ))
+        ) : (
+          <li className="no-playlist">
+            {isSidebarOpen ? "No playlists yet" : ""}
+          </li>
+        )}
+      </ul>
+    </section>
+  </aside>
+);
+
 }

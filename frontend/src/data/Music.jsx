@@ -29,7 +29,7 @@ export function MusicProvider({ children }) {
       id: 101,
       albumId: "juicy-01",
       title: "Lampu Kuning",
-      artist: "Juicy Luicy",
+    
       url: "/audio/lampu_kuning.mp3",
       cover: "/picture/Nonfiksi.png",
     },
@@ -37,7 +37,7 @@ export function MusicProvider({ children }) {
       id: 102,
       albumId: "juicy-01",
       title: "Asing",
-      artist: "Juicy Luicy",
+      
       url: "/audio/asing.mp3",
       cover: "/picture/Nonfiksi.png",
     },
@@ -45,7 +45,7 @@ export function MusicProvider({ children }) {
       id: 103,
       albumId: "juicy-01",
       title: "Tampar",
-      artist: "Juicy Luicy",
+      
       url: "/audio/tampar.mp3",
       cover: "/picture/Nonfiksi.png",
     },
@@ -53,7 +53,7 @@ export function MusicProvider({ children }) {
       id: 104,
       albumId: "juicy-01",
       title: "Bukan orangnya",
-      artist: "Juicy Luicy",
+      
       url: "/audio/bukan_orangnya.mp3",
       cover: "/picture/Nonfiksi.png",
     },
@@ -61,7 +61,7 @@ export function MusicProvider({ children }) {
       id: 201,
       albumId: "gorillaz-01",
       title: "Feel Good",
-      artist: "Gorillaz",
+    
       url: "/audio/feel_good.mp3",
       cover: "/picture/feel_good.png",
     },
@@ -69,7 +69,7 @@ export function MusicProvider({ children }) {
       id: 301,
       albumId: "arctic-01",
       title: "505",
-      artist: "Arctic Monkeys",
+  
       url: "/audio/505.mp3",
       cover: "/picture/patrick.png",
     },
