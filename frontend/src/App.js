@@ -1,7 +1,8 @@
 // ===========================================================
 //  FIXED + CLEANED App.js (FINAL)
 // ===========================================================
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -24,6 +25,22 @@ import PlaylistPage from "./pages/PlaylistPage";
 
 import "./App.css";
 
+// Base URL of your Spring Boot playlist API
+const PLAYLISTS_API_BASE = "http://localhost:8080/api/playlists";
+const USERS_API_BASE = "http://localhost:8080/api/users";
+
+// change host/port if your backend is different
+
+// Convert backend playlist object to the shape frontend uses
+const mapBackendToFrontend = (p) => ({
+  id: p.id,                             // MongoDB/id from backend
+  title: p.playlistName || "Untitled",  // backend field playlistName                 
+  image: "",                      
+  artist: "",                      
+  songs: [],                         
+});
+
+
 // ===========================================================
 // PRIVATE LAYOUT
 // ===========================================================
@@ -39,6 +56,35 @@ function PrivateLayout() {
 
  const [userPlaylists, setUserPlaylists] = useState(samplePlaylists);
 
+  useEffect(() => {
+  const token = getToken();
+  const userId = localStorage.getItem("userId"); // get logged in userId
+
+  if (!userId) {
+    console.warn("No userId found in localStorage.");
+    setUserPlaylists(samplePlaylists);
+    return;
+  }
+
+  axios
+    .get(`${USERS_API_BASE}/${userId}/playlists`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    .then((res) => {
+      const data = res.data;                   // List<Playlists>
+      const list = Array.isArray(data) ? data : [];
+      setUserPlaylists(list.map(mapBackendToFrontend));
+    })
+    .catch((err) => {
+      console.error(
+        "Failed to load playlists from backend, using samplePlaylists",
+        err
+      );
+      setUserPlaylists(samplePlaylists);
+    });
+}, []);
+
+
   const [currentPage, setCurrentPage] = useState("home");
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
@@ -48,17 +94,26 @@ function PrivateLayout() {
 
   const [currentTime, setCurrentTime] = useState(0);
   const [songDuration, setSongDuration] = useState(0);
+  const deletePlaylist = async (playlistId) => {
+    try {
+      const token = getToken();
 
-  const deletePlaylist = (playlistId) => {
-  setUserPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
+      await axios.delete(`${PLAYLISTS_API_BASE}/${playlistId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch (err) {
+      console.error("Failed to delete playlist on server, removing locally anyway", err);
+    }
 
-  // kalau playlist yang lagi dibuka dihapus → balik ke home
-  if (selectedPlaylist?.id === playlistId) {
-    setSelectedPlaylist(null);
-    setCurrentPlaylist(null);
-    setCurrentPage("home");
-  }
-};
+    setUserPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
+
+    if (selectedPlaylist?.id === playlistId) {
+      setSelectedPlaylist(null);
+      setCurrentPlaylist(null);
+      setCurrentPage("home");
+    }
+  };
+
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
@@ -104,34 +159,64 @@ function PrivateLayout() {
     }
   };
 
- const handleCreatePlaylist = () => {
-    const newPlaylist = {
-      id: `pl-${Date.now()}`,
-      title: "New Playlist",
-      description: "New playlist (mock)",
-      image: "",
-      artist: "",
-      songs: [
-        {
-          id: `s-${Date.now()}`,
-          title: "New Song",
-          artist: "Unknown",
-          image: "",
-          src: "",
-        },
-      ],
+  const handleCreatePlaylist = async () => {
+    const baseName = "New Playlist";
+    const token = getToken();
+    const userId = localStorage.getItem("userId");
+
+    // Local fallback if backend fails
+    const fallbackCreate = () => {
+      const newPlaylist = {
+        id: `pl-${Date.now()}`,
+        title: baseName,
+        description: "New playlist (local only)",
+        image: "",
+        artist: "",
+        songs: [],
+      };
+
+      setUserPlaylists((prev) => [newPlaylist, ...prev]);
+      setSelectedPlaylist(newPlaylist);
+      setCurrentPlaylist(newPlaylist);
+      setCurrentPage("playlist");
+      setPanelMode("playlist");
+      setPanelManuallyClosed(false);
+      setIsPanelOpen(true);
     };
 
-    setUserPlaylists((prev) => [newPlaylist, ...prev]);
+    if (!userId) {
+      console.warn("No userId found in localStorage, creating local-only playlist");
+      fallbackCreate();
+      return;
+    }
 
-    setSelectedPlaylist(newPlaylist);
-    setCurrentPlaylist(newPlaylist);
-    setCurrentPage("playlist");
+    try {
+      const res = await axios.post(
+        `${USERS_API_BASE}/${userId}/playlists`,
+        {
+          playlistName: baseName,
+          songIds: [],            // songs not wired yet
+        },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
 
-    setPanelMode("playlist");
-    setPanelManuallyClosed(false);
-    setIsPanelOpen(true);
+      const backendPlaylist = mapBackendToFrontend(res.data);
+
+      setUserPlaylists((prev) => [backendPlaylist, ...prev]);
+      setSelectedPlaylist(backendPlaylist);
+      setCurrentPlaylist(backendPlaylist);
+      setCurrentPage("playlist");
+      setPanelMode("playlist");
+      setPanelManuallyClosed(false);
+      setIsPanelOpen(true);
+    } catch (err) {
+      console.error("Failed to create playlist on server, using local fallback", err);
+      fallbackCreate();
+    }
   };
+
 
   const handleLogoClick = () => {
     setActiveSongPage(null);
@@ -142,23 +227,38 @@ function PrivateLayout() {
   };
 
   const handleLogout = () => logout(); // changes add here
-  const updatePlaylistName = (playlistId, newName) => {
-  setUserPlaylists((prev) =>
-    prev.map((p) =>
-      p.id === playlistId ? { ...p, title: newName } : p
-    )
-  );
+  const updatePlaylistName = async (playlistId, newName) => {
+  const trimmed = newName.trim();
+  if (!trimmed) return;
 
+  try {
+    const token = getToken();
 
-  setSelectedPlaylist((prev) =>
-    prev && prev.id === playlistId ? { ...prev, title: newName } : prev
-  );
+    const res = await axios.put(
+      `${PLAYLISTS_API_BASE}/${playlistId}/rename`,
+      { newName: trimmed }, // backend expects key "newName"
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }
+    );
 
- 
-  setCurrentPlaylist((prev) =>
-    prev && prev.id === playlistId ? { ...prev, title: newName } : prev
-  );
-};
+    const updated = mapBackendToFrontend(res.data);
+
+    setUserPlaylists((prev) =>
+      prev.map((p) => (p.id === playlistId ? updated : p))
+    );
+
+    setSelectedPlaylist((prev) =>
+      prev && prev.id === playlistId ? updated : prev
+    );
+
+    setCurrentPlaylist((prev) =>
+      prev && prev.id === playlistId ? updated : prev
+    );
+  } catch (err) {
+    console.error("Failed to rename playlist on server", err);
+  }
+  };  
   return (
     <div className="app-container">
       <Navbar onLogoClick={handleLogoClick} onLogout={handleLogout} />
@@ -182,21 +282,7 @@ function PrivateLayout() {
   onBack={() => setCurrentPage("home")}
   onSelectSong={(song) => handleSelectSong(song, selectedPlaylist)}
 
-  updatePlaylistName={(playlistId, newName) => {
-    // 1. Update playlists list
-    setUserPlaylists((prev) =>
-      prev.map((p) =>
-        p.id === playlistId ? { ...p, title: newName } : p
-      )
-    );
-
-    // 2. Update selected playlist
-    if (selectedPlaylist && selectedPlaylist.id === playlistId) {
-      const updated = { ...selectedPlaylist, title: newName };
-      setSelectedPlaylist(updated);
-      setCurrentPlaylist(updated);
-    }
-  }}
+  updatePlaylistName={updatePlaylistName}  
 
   onAddSong={(playlistId) => {
     const newSong = {
@@ -267,7 +353,7 @@ function PrivateLayout() {
 
           <audio
             ref={audioRef}
-            src={currentSong?.src || ""}
+            src={currentSong?.src || undefined}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleDurationLoad}
             onEnded={handleSongEnd}
