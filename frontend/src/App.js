@@ -14,7 +14,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AddSongPage from "./pages/AddSongPage";
 import AddSongPageNext from "./pages/AddSongPageNext";
 
-import { sidebarPlaylists, samplePlaylists } from "./data/Playlist";
+import { samplePlaylists, sidebarPlaylists } from "./data/Playlist";
 import { MusicProvider, useMusic } from "./data/Music";
 
 import Login from "./pages/Login";
@@ -37,7 +37,7 @@ function PrivateLayout() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const [userPlaylists, setUserPlaylists] = useState(sidebarPlaylists || []);
+ const [userPlaylists, setUserPlaylists] = useState(samplePlaylists);
 
   const [currentPage, setCurrentPage] = useState("home");
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
@@ -48,6 +48,17 @@ function PrivateLayout() {
 
   const [currentTime, setCurrentTime] = useState(0);
   const [songDuration, setSongDuration] = useState(0);
+
+  const deletePlaylist = (playlistId) => {
+  setUserPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
+
+  // kalau playlist yang lagi dibuka dihapus → balik ke home
+  if (selectedPlaylist?.id === playlistId) {
+    setSelectedPlaylist(null);
+    setCurrentPlaylist(null);
+    setCurrentPage("home");
+  }
+};
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
@@ -130,68 +141,115 @@ function PrivateLayout() {
     setIsPanelOpen(false);
   };
 
-  const handleLogout = () => logout(); // call the logout function from auth.js
+  const handleLogout = () => logout(); // changes add here
+  const updatePlaylistName = (playlistId, newName) => {
+  setUserPlaylists((prev) =>
+    prev.map((p) =>
+      p.id === playlistId ? { ...p, title: newName } : p
+    )
+  );
 
+
+  setSelectedPlaylist((prev) =>
+    prev && prev.id === playlistId ? { ...prev, title: newName } : prev
+  );
+
+ 
+  setCurrentPlaylist((prev) =>
+    prev && prev.id === playlistId ? { ...prev, title: newName } : prev
+  );
+};
   return (
     <div className="app-container">
       <Navbar onLogoClick={handleLogoClick} onLogout={handleLogout} />
 
       <div className="main-layout">
-        <Sidebar
-          playlists={sidebarPlaylists}
-          onSelectPlaylist={handleSelectPlaylist}
-          onCreatePlaylist={handleCreatePlaylist}
-          isOpen={isSidebarOpen}
-          setIsOpen={setIsSidebarOpen}
-        />
+<Sidebar
+  playlists={userPlaylists}
+  onSelectPlaylist={handleSelectPlaylist}
+  onCreatePlaylist={handleCreatePlaylist}
+  onDeletePlaylist={deletePlaylist}   // ✅ tambahkan ini
+  isOpen={isSidebarOpen}
+  setIsOpen={setIsSidebarOpen}
+/>
+
 
         <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
           {currentPage === "playlist" && selectedPlaylist ? (
-            <PlaylistPage
-              playlist={selectedPlaylist}
-              onBack={() => setCurrentPage("home")}
-              onSelectSong={(song) =>
-                handleSelectSong(song, selectedPlaylist)
-              }
+            //changes made here
+<PlaylistPage
+  playlist={selectedPlaylist}
+  onBack={() => setCurrentPage("home")}
+  onSelectSong={(song) => handleSelectSong(song, selectedPlaylist)}
 
-              onAddSong={(playlistId) => {
-                // mock add song: push a dummy song to selected playlist
-                const newSong = {
-                  id: `s-${Date.now()}`,
-                  title: "Added Song",
-                  artist: "Unknown",
-                  image: "",
-                  src: "",
-                };
-                // update userPlaylists and selected/current playlist
-                setUserPlaylists((prev) =>
-                  prev.map((p) =>
-                    p.id === playlistId ? { ...p, songs: [...(p.songs||[]), newSong] } : p
-                  )
-                );
-                if (selectedPlaylist && selectedPlaylist.id === playlistId) {
-                  const updated = { ...selectedPlaylist, songs: [...(selectedPlaylist.songs||[]), newSong] };
-                  setSelectedPlaylist(updated);
-                  setCurrentPlaylist(updated);
-                }
-              }}
-              onRemoveSong={(playlistId, songId) => {
-                setUserPlaylists((prev) =>
-                  prev.map((p) =>
-                    p.id === playlistId ? { ...p, songs: (p.songs || []).filter(s => s.id !== songId) } : p
-                  )
-                );
-                if (selectedPlaylist && selectedPlaylist.id === playlistId) {
-                  const updated = { ...selectedPlaylist, songs: (selectedPlaylist.songs || []).filter(s => s.id !== songId) };
-                  setSelectedPlaylist(updated);
-                  setCurrentPlaylist(updated);
-                }
-              }}
-            />
+  updatePlaylistName={(playlistId, newName) => {
+    // 1. Update playlists list
+    setUserPlaylists((prev) =>
+      prev.map((p) =>
+        p.id === playlistId ? { ...p, title: newName } : p
+      )
+    );
+
+    // 2. Update selected playlist
+    if (selectedPlaylist && selectedPlaylist.id === playlistId) {
+      const updated = { ...selectedPlaylist, title: newName };
+      setSelectedPlaylist(updated);
+      setCurrentPlaylist(updated);
+    }
+  }}
+
+  onAddSong={(playlistId) => {
+    const newSong = {
+      id: `s-${Date.now()}`,
+      title: "Added Song",
+      artist: "Unknown",
+      image: "",
+      src: "",
+    };
+
+    setUserPlaylists((prev) =>
+      prev.map((p) =>
+        p.id === playlistId
+          ? { ...p, songs: [...(p.songs || []), newSong] }
+          : p
+      )
+    );
+
+    if (selectedPlaylist && selectedPlaylist.id === playlistId) {
+      const updated = {
+        ...selectedPlaylist,
+        songs: [...(selectedPlaylist.songs || []), newSong],
+      };
+      setSelectedPlaylist(updated);
+      setCurrentPlaylist(updated);
+    }
+  }}
+
+  onRemoveSong={(playlistId, songId) => {
+    setUserPlaylists((prev) =>
+      prev.map((p) =>
+        p.id === playlistId
+          ? { ...p, songs: (p.songs || []).filter((s) => s.id !== songId) }
+          : p
+      )
+    );
+
+    if (selectedPlaylist && selectedPlaylist.id === playlistId) {
+      const updated = {
+        ...selectedPlaylist,
+        songs: (selectedPlaylist.songs || []).filter((s) => s.id !== songId),
+      };
+      setSelectedPlaylist(updated);
+      setCurrentPlaylist(updated);
+    }
+  }}
+/>
+
+
             
           ) : !activeSongPage ? (
             <MainLayout
-              playlists={samplePlaylists}
+              playlists={userPlaylists}
               onSelect={handleSelectPlaylist}
               onSelectSong={handleSelectSong}
             />
