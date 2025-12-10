@@ -2,7 +2,7 @@
 //  FIXED + CLEANED App.js (FINAL)
 // ===========================================================
 import React, { useState } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, Outlet } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
@@ -147,6 +147,7 @@ function PrivateLayout() {
         />
 
         <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
+          <Outlet/>
           {currentPage === "playlist" && selectedPlaylist ? (
             <PlaylistPage
               playlist={selectedPlaylist}
@@ -255,17 +256,19 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* FIXED: removed conflicts */}
-         <Route
-          path="/profile"
-          element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />}
-        />
-
         <Route
-          path="/"
-          element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
-        />
-        <Route path="/profile" element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />} />
+  path="/"
+  element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
+>
+  <Route 
+  path="profile"
+  element={
+    <ProfilePage
+    />
+  }
+/>
+
+</Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
