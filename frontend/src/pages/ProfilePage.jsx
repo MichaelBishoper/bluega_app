@@ -1,72 +1,32 @@
 import React from "react";
+import { FaUser } from "react-icons/fa";
+import "../css/ProfilePage.css";
 
+export default function ProfilePage({ playlists, onSelectPlaylist }) {
+  return (
+    <div className="profile-wrapper">
 
-export default function ProfilePage() {
-return (
-<div className="profile-container">
-{/* === BANNER === */}
-<div className="profile-banner"></div>
+      {/* USER HEADER */}
+      <div className="profile-header">
+        <div className="profile-icon">
+          <FaUser size={60} />
+        </div>
 
-
-{/* === PROFILE INFO === */}
-<div className="profile-info">
-<img
-src="https://via.placeholder.com/140"
-alt="pfp"
-className="profile-picture"
-/>
-<div>
-<h2 className="profile-username">Your Username</h2>
-</div>
-</div>
-
-
-{/* === SECTION: ALBUMS === */}
-<section className="section">
-<div className="section-header">
-<h3>Albums</h3>
-<button className="section-button">+ Upload Album</button>
-</div>
-
-
-<div className="grid">
-{/* Existing album */}
-<div className="card">
-<div className="card-img" />
-<p className="card-title">My First Album</p>
-<p className="card-sub">1 Song</p>
-</div>
-
-
-{/* Upload placeholder */}
-<div className="card placeholder">
-<span>+</span>
-</div>
-</div>
-</section>
-
-
-{/* === SECTION: PLAYLISTS === */}
-<section className="section">
-<div className="section-header">
-<h3>Your Playlists</h3>
-<button className="section-button">+ New Playlist</button>
-</div>
-
-
-<div className="grid">
-<div className="card">
-<div className="card-img" />
-<p className="card-title">Workout Corei3</p>
-<p className="card-sub">12 Songs</p>
-</div>
-
-
-<div className="card placeholder">
-<span>+</span>
-</div>
-</div>
-</section>
-</div>
-);
+        <div className="profile-texts">
+          <h1 className="profile-name">Your Profile</h1>
+          <p className="profile-subtitle">All playlists you create will appear here.</p>
+        </div>
+      </div>
+    
+        {playlists?.map((pl) => (
+          <div key={pl.id} className="profile-card" onClick={() => onSelectPlaylist(pl)}>
+            <img
+              src={pl.image || "https://via.placeholder.com/200"}
+              alt={pl.title}
+            />
+            <div className="profile-card-title">{pl.title}</div>
+          </div>
+        ))}
+      </div>
+  );
 }
