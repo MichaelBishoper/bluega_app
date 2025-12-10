@@ -15,7 +15,6 @@ import ProfilePage from "./pages/ProfilePage";
 import AddSongPage from "./pages/AddSongPage";
 import AddSongPageNext from "./pages/AddSongPageNext";
 
-import { samplePlaylists, sidebarPlaylists } from "./data/Playlist";
 import { MusicProvider, useMusic } from "./data/Music";
 
 import Login from "./pages/Login";
@@ -49,40 +48,43 @@ function PrivateLayout() {
   const { currentSong, isPlaying, playSong, togglePlay, audioRef, nextSong, prevSong } =
     useMusic();
 
+  const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+  const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
+
   const [currentPlaylist, setCurrentPlaylist] = useState(null);
   const [activeSongPage, setActiveSongPage] = useState(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
- const [userPlaylists, setUserPlaylists] = useState(samplePlaylists);
+  const [userPlaylists, setUserPlaylists] = useState([]);
 
   useEffect(() => {
-  const token = getToken();
-  const userId = localStorage.getItem("userId"); // get logged in userId
+    const token = getToken();
 
-  if (!userId) {
-    console.warn("No userId found in localStorage.");
-    setUserPlaylists(samplePlaylists);
-    return;
-  }
+    if (!userId) {
+      console.warn("No userId found in sessionStorage.");
+      setUserPlaylists([]);
+      return;
+    }
 
-  axios
-    .get(`${USERS_API_BASE}/${userId}/playlists`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-    .then((res) => {
-      const data = res.data;                   // List<Playlists>
-      const list = Array.isArray(data) ? data : [];
-      setUserPlaylists(list.map(mapBackendToFrontend));
-    })
-    .catch((err) => {
-      console.error(
-        "Failed to load playlists from backend, using samplePlaylists",
-        err
-      );
-      setUserPlaylists(samplePlaylists);
-    });
-}, []);
+    axios
+      .get(`${USERS_API_BASE}/${userId}/playlists`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      .then((res) => {
+        const data = res.data; // List<Playlists>
+        const list = Array.isArray(data) ? data : [];
+        setUserPlaylists(list.map(mapBackendToFrontend));
+      })
+      .catch((err) => {
+        console.error(
+          "Failed to load playlists from backend, using empty list",
+          err
+        );
+        setUserPlaylists([]);
+      });
+  }, [userId]);
+
 
 
   const [currentPage, setCurrentPage] = useState("home");
@@ -162,7 +164,6 @@ function PrivateLayout() {
   const handleCreatePlaylist = async () => {
     const baseName = "New Playlist";
     const token = getToken();
-    const userId = localStorage.getItem("userId");
 
     // Local fallback if backend fails
     const fallbackCreate = () => {
@@ -185,7 +186,7 @@ function PrivateLayout() {
     };
 
     if (!userId) {
-      console.warn("No userId found in localStorage, creating local-only playlist");
+      console.warn("No userId found in sessionStorage, creating local-only playlist");
       fallbackCreate();
       return;
     }
@@ -195,7 +196,7 @@ function PrivateLayout() {
         `${USERS_API_BASE}/${userId}/playlists`,
         {
           playlistName: baseName,
-          songIds: [],            // songs not wired yet
+          songIds: [],
         },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -392,6 +393,8 @@ function PrivateLayout() {
 // ROUTES
 // ===========================================================
 export default function App() {
+  const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}"); // get user object from sessionStorage
+  const userId = storedUser.id; // get userId from stored user object
   return (
     <MusicProvider>
       <Routes>
@@ -406,8 +409,15 @@ export default function App() {
 
         <Route
           path="/"
-          element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
+          element={
+            getToken() ? (
+              <PrivateLayout key={userId || "no-user"} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
         />
+
 
         <Route path="/add-song" element={<AddSongPage />} />
         <Route path="/add-song/next" element={<AddSongPageNext />} />

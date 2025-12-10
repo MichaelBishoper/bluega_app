@@ -40,27 +40,26 @@ import Sidebar from "./components/SideBar";
 import PlaylistGrid from "./components/PlaylistGrid";
 import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
-import { samplePlaylists, sidebarPlaylists } from "./data/Playlist";
 import "./App.css";
 
 export default function App() {
   return (
-    <div className="app-container">
+    <MusicProvider>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-      {/* Sidebar */}
-      <Sidebar playlists={sidebarPlaylists} />
+        <Route
+          path="/"
+          element={
+            getToken()
+              ? <PrivateLayout />
+              : <Navigate to="/login" replace />
+          }
+        />
 
-      {/* Main Content */}
-      <div className="main-content">
-        <Navbar />
-        <PlaylistGrid playlists={samplePlaylists} />
-      </div>
-
-      {/* Right Panel */}
-      <RightPanel />
-
-      {/* Music Player */}
-      <PlayerBar />
-    </div>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </MusicProvider>
   );
 }
