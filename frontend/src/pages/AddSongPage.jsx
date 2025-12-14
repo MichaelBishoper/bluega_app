@@ -5,6 +5,7 @@ import"../css/AddSongPage.css"
 
 export default function AddSongPage() {
     const [title, setTitle] = useState(""); // -> Album NAME
+    const [artist, setArtist] = useState(""); // -> Album ARTIST
     const [type, setType] = useState(""); // -> Album TYPE
     const [songCount, setSongCount] = useState("");  // -> Song COUNT
     const [coverFile, setCoverFile] = useState(null); // -> Album COVER IMAGE
@@ -20,6 +21,7 @@ export default function AddSongPage() {
         // albumData JSON
         const albumData = {
             title: title,
+            artist: artist,   
             type: type.toLowerCase(),
             songCount: Number(songCount)
         };
@@ -106,6 +108,14 @@ export default function AddSongPage() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                required
+            />
+            <br />
+            <label>Artist: </label>
+            <input
+                type="text"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
                 required
             />
             <br />

@@ -109,11 +109,12 @@
   opacity: 0.6;
 }
 
-.playlistPage-songImg {
+.playlistPage-songImg img {
   width: 55px;
   height: 55px;
   border-radius: 8px;
   object-fit: cover;
+  border: none;
 }
 
 .playlistPage-songInfo .playlistPage-title {

@@ -1,39 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../css/PlaylistPage.css"; // reuse CSS
+import axios from "axios";
+import "../css/PlaylistPage.css";
 import { useMusic } from "../data/Music";
 
 export default function AlbumDetailPage() {
   const { albumId } = useParams();
   const navigate = useNavigate();
+
   const { playSong, togglePlay, currentSong, isPlaying } = useMusic();
 
-  // 🔹 TEMP DUMMY ALBUMS (AMAN, BACKEND NYUSUL)
-  const albums = Array.from({ length: 25 }).map((_, i) => ({
-    id: i.toString(), // ⚠️ STRING biar match params
-    title: `New Album ${i + 1}`,
-    artist: "Unknown Artist",
-    image: null,
-    songs: [
-      {
-        id: `s-${i}-1`,
-        title: "Sample Song 1",
-        artist: "Unknown",
-        image: "",
-        src: "",
-      },
-      {
-        id: `s-${i}-2`,
-        title: "Sample Song 2",
-        artist: "Unknown",
-        image: "",
-        src: "",
-      },
-    ],
-  }));
+  const [album, setAlbum] = useState(null);
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 🔹 FIND ALBUM (SAFE)
-  const album = albums.find((a) => a.id === albumId);
+  // =========================
+  // Fetch album + songs
+  // =========================
+  useEffect(() => {
+    const fetchAlbumData = async () => {
+      try {
+        const albumRes = await axios.get(
+          `http://localhost:8080/api/albums/${albumId}`
+        );
+
+        const songsRes = await axios.get(
+          `http://localhost:8080/api/albums/${albumId}/songs`
+        );
+
+        setAlbum(albumRes.data);
+        setSongs(songsRes.data || []);
+      } catch (err) {
+        console.error("Failed to load album:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlbumData();
+  }, [albumId]);
+
+  // =========================
+  // Guards
+  // =========================
+  if (loading) {
+    return <p style={{ padding: "20px" }}>Loading album...</p>;
+  }
 
   if (!album) {
     return (
@@ -44,8 +56,9 @@ export default function AlbumDetailPage() {
     );
   }
 
-  const songs = album.songs || [];
-
+  // =========================
+  // Player helpers
+  // =========================
   const isCurrent = (song) =>
     song && currentSong && song.id === currentSong.id;
 
@@ -61,12 +74,13 @@ export default function AlbumDetailPage() {
     }
   };
 
+  // =========================
+  // Render
+  // =========================
   return (
     <div className="playlistPage-container">
-
       {/* HEADER */}
       <div className="playlistPage-banner">
-
         <button
           className="playlistPage-back"
           onClick={() => navigate("/albums")}
@@ -78,13 +92,18 @@ export default function AlbumDetailPage() {
           <button
             className="playlistPage-playBtn"
             onClick={handlePlayPause}
+            disabled={!songs.length}
           >
             {isCurrent(songs[0]) && isPlaying ? "⏸" : "▶"}
           </button>
         </div>
 
         <div className="playlistPage-cover">
-          {!album.image && <div className="album-placeholder">＋</div>}
+          {album.imgUrl ? (
+            <img src={album.imgUrl} alt={album.title} />
+          ) : (
+            <div className="album-placeholder">＋</div>
+          )}
         </div>
 
         <div className="playlistPage-info">
@@ -104,11 +123,23 @@ export default function AlbumDetailPage() {
               className={`playlistPage-songRow ${
                 isCurrent(song) ? "active" : ""
               }`}
-              onClick={() => playSong(song, album, true)}
+              onClick={() => playSong(
+                {
+                  ...song,
+                  albumCover: album.imgUrl,
+                  albumArtist: album.artist,
+                },
+                album,
+                index
+              )}
             >
-              <span className="playlistPage-index">{index + 1}</span>
+              <span className="playlistPage-index">
+                {song.order ?? index + 1}
+              </span>
 
-              <div className="playlistPage-songImg" />
+              <div className="playlistPage-songImg">
+                <img src={album.imgUrl} alt={song.title} />
+              </div>
 
               <div className="playlistPage-songInfo">
                 <p className="playlistPage-title">{song.title}</p>
