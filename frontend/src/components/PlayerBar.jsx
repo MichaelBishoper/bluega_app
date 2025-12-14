@@ -39,14 +39,15 @@ export default function PlayerBar() {
 
   const toggleQueuePanel = () => setShowQueue((prev) => !prev);
 
-  // fallback cover
   const songCover =
-    currentSong?.cover ??
-    currentSong?.image ??
-    "https://placehold.co/45x45/4361ee/ffffff?text=♫";
+  currentSong?.albumCover ??
+  "https://placehold.co/45x45/4361ee/ffffff?text=♫";
 
   const songTitle = currentSong?.title || "No Song Playing";
-  const songArtist = currentSong?.artist || "—";
+  const songArtist =
+    currentSong?.artist ||
+    currentSong?.albumArtist ||
+    "—";
 
   // ---------------- TIME FORMAT HELPERS ----------------
   const formatTime = (seconds) => {
