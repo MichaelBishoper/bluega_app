@@ -89,11 +89,24 @@ export default function PlaylistPage({
           </button>
         </div>
 
-        <img
-          src={playlist.image}
-          alt={playlist.title}
-          className="playlistPage-cover"
-        />
+        <div className="playlistPage-cover">
+  {songs.length === 0 ? (
+    <div className="playlist-cover-placeholder">🎵</div>
+  ) : (
+    <div className="playlist-cover-grid">
+      {songs.slice(0, 4).map((song, index) => (
+        <div key={index} className="playlist-cover-cell">
+          {song.image ? (
+            <img src={song.image} alt={song.title} />
+          ) : (
+            <div className="playlist-cover-empty">🎶</div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
         <div className="playlistPage-info">
           {isEditing ? (
