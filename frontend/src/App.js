@@ -256,6 +256,12 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
+        {/* FIXED: removed conflicts */}
+         <Route
+          path="/profile"
+          element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />}
+        />
+
         <Route
   path="/"
   element={getToken() ? <PrivateLayout /> : <Navigate to="/login" replace />}
