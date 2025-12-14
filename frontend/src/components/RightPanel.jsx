@@ -98,15 +98,9 @@ export default function RightPanel({
           <div className="panel-content">
             {mode === "song" && (
               <>
-                <img
-                  src={data.cover || "/default-cover.jpg"}
-                  className="panel-image"
-                  alt={data.title}
-                />
-
                 <p className="panel-text">
                   <strong>Status:</strong>{" "}
-                  {isPlaying ? "Now Playing 🎶" : "Paused ⏸"}
+                  {isPlaying ? "Now Playing" : "Paused ⏸"}
                 </p>
               </>
             )}

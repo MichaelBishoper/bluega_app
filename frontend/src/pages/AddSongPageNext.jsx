@@ -1,9 +1,8 @@
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function AddSongPageNext() {
-    // Add this ABOVE your component or at the bottom of the file:
 
 const styles = {
     container: {
@@ -47,26 +46,44 @@ const styles = {
 };
 
     const location = useLocation();
-    const state = location.state;
-
-
-    const { songCount, albumId, userId } = state;
+    const state = location.state || {};
+    const { songCount = 0, albumId, userId } = state;
+    // Album Artist State
+    const [albumArtist, setAlbumArtist] = useState("");
 
     const [songs, setSongs] = useState(
         Array.from({ length: songCount }, () => ({
-            name: "",
+            title: "",
             file: null,
             uploaded: false
         }))
     );
 
+        useEffect(() => {
+        const fetchAlbum = async () => {
+            try {
+            const res = await axios.get(
+                `http://localhost:8080/api/albums/${albumId}`
+            );
+            setAlbumArtist(res.data.artist);
+            } catch (err) {
+            console.error("Failed to fetch album:", err);
+            }
+        };
+
+        fetchAlbum();
+        }, [albumId]);
+
+
         if (!state) {
         return <p>Error: No album information provided.</p>;
     }
 
-    const handleNameChange = (i, value) => {
+
+
+    const handleTitleChange = (i, value) => {
         const updated = [...songs];
-        updated[i].name = value;
+        updated[i].title = value;
         setSongs(updated);
     };
 
@@ -79,8 +96,8 @@ const styles = {
     const uploadSingleSong = async (i) => {
         const song = songs[i];
 
-        if (!song.name || !song.file) {
-            alert("Please enter name and choose a file.");
+        if (!song.title || !song.file) {
+            alert("Please enter a title and choose a file.");
             return;
         }
 
@@ -88,7 +105,14 @@ const styles = {
 
         // Backend wants:
         // songData = JSON string
-        formData.append("songData", JSON.stringify({ name: song.name }));
+        
+        formData.append(
+        "songData",
+            JSON.stringify({
+                title: song.title,
+                artist: albumArtist
+            })
+        );
 
         // audio = the file
         formData.append("audio", song.file);
@@ -127,7 +151,7 @@ const styles = {
                         value={song.name}
                         disabled={song.uploaded}
                         onChange={(e) =>
-                            handleNameChange(index, e.target.value)
+                            handleTitleChange(index, e.target.value)
                         }
                     />
 

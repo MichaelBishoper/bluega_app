@@ -8,119 +8,62 @@ import React, {
   useCallback,
 } from "react";
 
-/**
- * Music context — manages a single Audio instance, queue, playlist fallback,
- * progress, time, volume, loop, next/prev, and exposes a nextSong alias
- * to avoid legacy runtime errors.
- *
- * Assumes songs have a `url` string field.
- */
-
 const MusicContext = createContext();
 export const useMusic = () => useContext(MusicContext);
 
 export function MusicProvider({ children }) {
+  const [songs, setSongs] = useState([]);
   const audioRef = useRef(new Audio());
-
-  // CORE
-  const [songs] = useState([
-    // keep your sample songs here or replace with your real list
-    {
-      id: 101,
-      albumId: "juicy-01",
-      title: "Lampu Kuning",
-    
-      url: "/audio/lampu_kuning.mp3",
-      cover: "/picture/Nonfiksi.png",
-    },
-    {
-      id: 102,
-      albumId: "juicy-01",
-      title: "Asing",
-      
-      url: "/audio/asing.mp3",
-      cover: "/picture/Nonfiksi.png",
-    },
-    {
-      id: 103,
-      albumId: "juicy-01",
-      title: "Tampar",
-      
-      url: "/audio/tampar.mp3",
-      cover: "/picture/Nonfiksi.png",
-    },
-    {
-      id: 104,
-      albumId: "juicy-01",
-      title: "Bukan orangnya",
-      
-      url: "/audio/bukan_orangnya.mp3",
-      cover: "/picture/Nonfiksi.png",
-    },
-    {
-      id: 201,
-      albumId: "gorillaz-01",
-      title: "Feel Good",
-    
-      url: "/audio/feel_good.mp3",
-      cover: "/picture/feel_good.png",
-    },
-    {
-      id: 301,
-      albumId: "arctic-01",
-      title: "505",
-  
-      url: "/audio/505.mp3",
-      cover: "/picture/patrick.png",
-    },
-  ]);
 
   const [currentSong, setCurrentSong] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const [progress, setProgress] = useState(0); // 0 - 100
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [progress, setProgress] = useState(0);
 
-  const [volume, setVolume] = useState(1); // 0 - 1
+  const [volume, setVolume] = useState(1);
   const [isLooping, setIsLooping] = useState(false);
 
-  const [playlist, setPlaylist] = useState(null); // optional playlist object with .songs
+  const [playlist, setPlaylist] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const [queue, setQueue] = useState([]);
   const [recentHistory, setRecentHistory] = useState([]);
 
-  // Queue system (FIFO)
-  const [queue, setQueue] = useState([]);
+  /* ---------------- QUEUE ---------------- */
 
   const addToQueue = useCallback((song) => {
-    if (!song) return;
-    setQueue((q) => [...q, song]);
+    if (song) setQueue((q) => [...q, song]);
   }, []);
 
-  const removeFromQueue = useCallback((index) => {
-    setQueue((q) => q.filter((_, i) => i !== index));
-  }, []);
+  const removeFromQueue = useCallback(
+    (index) => setQueue((q) => q.filter((_, i) => i !== index)),
+    []
+  );
 
   const clearQueue = useCallback(() => setQueue([]), []);
 
-  // helper: push to recent
+  /* ---------------- RECENT ---------------- */
+
   const pushToRecent = useCallback((song) => {
-    if (!song) return;
     setRecentHistory((prev) => {
       const filtered = prev.filter((s) => s.id !== song.id);
       return [{ ...song, playedAt: Date.now() }, ...filtered].slice(0, 50);
     });
   }, []);
 
-  // Play a song (explicit). Accepts optional list & index for playlist fallback.
-  const playSong = useCallback((song, list = null, index = 0) => {
-    if (!song) return;
-    setPlaylist(list ?? null);
-    setCurrentIndex(index);
-    setCurrentSong(song);
-    pushToRecent(song);
-  }, [pushToRecent]);
+  /* ---------------- PLAY ---------------- */
+
+  const playSong = useCallback(
+    (song, list = null, index = 0) => {
+      if (!song) return;
+      setPlaylist(list);
+      setCurrentIndex(index);
+      setCurrentSong(song);
+      pushToRecent(song);
+    },
+    [pushToRecent]
+  );
 
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
@@ -130,182 +73,154 @@ export function MusicProvider({ children }) {
       audio.pause();
       setIsPlaying(false);
     } else {
-      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      audio
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     }
   }, [currentSong, isPlaying]);
 
-  const setVolumeLevel = useCallback((v) => {
-    const value = Math.max(0, Math.min(1, v));
-    setVolume(value);
-    if (audioRef.current) audioRef.current.volume = value;
-  }, []);
+  /* ---------------- NAV ---------------- */
+
+  const next = useCallback(() => {
+    if (queue.length > 0) {
+      const nextSong = queue[0];
+      setQueue((q) => q.slice(1));
+      playSong(nextSong, playlist, 0);
+      return;
+    }
+
+    if (!playlist?.songs?.length) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    const nextIndex = (currentIndex + 1) % playlist.songs.length;
+    playSong(playlist.songs[nextIndex], playlist, nextIndex);
+  }, [queue, playlist, currentIndex, playSong]);
+
+  const prev = useCallback(() => {
+    if (!playlist?.songs?.length) return;
+
+    const prevIndex =
+      (currentIndex - 1 + playlist.songs.length) % playlist.songs.length;
+
+    playSong(playlist.songs[prevIndex], playlist, prevIndex);
+  }, [playlist, currentIndex, playSong]);
+
+  const nextSong = next; // legacy alias
+
+  /* ---------------- CONTROLS ---------------- */
 
   const seek = useCallback((percent) => {
     const audio = audioRef.current;
-    if (!audio || !audio.duration) return;
+    if (!audio?.duration) return;
+
     const p = Math.max(0, Math.min(100, percent));
-    const newTime = (p / 100) * audio.duration;
-    audio.currentTime = newTime;
-    setCurrentTime(newTime);
-    setProgress(p);
+    audio.currentTime = (p / 100) * audio.duration;
+  }, []);
+
+  const setVolumeLevel = useCallback((v) => {
+    const val = Math.max(0, Math.min(1, v));
+    setVolume(val);
+    audioRef.current.volume = val;
   }, []);
 
   const toggleLoop = useCallback(() => setIsLooping((v) => !v), []);
 
-  // NEXT: queue-first behaviour (play first queued and remove it)
-  const next = useCallback(() => {
-    // if queue exists, play first queued and remove it (behaviour #1)
-    if (queue.length > 0) {
-      const nextQueued = queue[0];
-      setQueue((q) => q.slice(1));
-      playSong(nextQueued, null, 0);
-      return;
-    }
+  /* ---------------- AUDIO EVENTS ---------------- */
 
-    // fallback to playlist or master songs
-    const list = playlist?.songs || songs;
-    if (!list || list.length === 0) {
-      // nothing to play -> pause
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      setIsPlaying(false);
-      return;
-    }
-    const newIndex = (currentIndex + 1) % list.length;
-    playSong(list[newIndex], playlist ? playlist.songs : list, newIndex);
-  }, [queue, playlist, songs, currentIndex, playSong]);
-
-  // PREV: playlist-based previous
-  const prev = useCallback(() => {
-    const list = playlist?.songs || songs;
-    if (!list || list.length === 0) return;
-    const newIndex = (currentIndex - 1 + list.length) % list.length;
-    playSong(list[newIndex], playlist ? playlist.songs : list, newIndex);
-  }, [playlist, songs, currentIndex, playSong]);
-
-  // alias for legacy callers
-  const nextSong = next;
-
-  // AUDIO EVENT HANDLING (single place)
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
 
     const onTimeUpdate = () => {
       if (!audio.duration) return;
       setCurrentTime(audio.currentTime);
-      setDuration(audio.duration);
       setProgress((audio.currentTime / audio.duration) * 100);
-    };
-
-    const onLoadedMeta = () => {
-      setDuration(audio.duration || 0);
     };
 
     const onEnded = () => {
       if (isLooping) {
         audio.currentTime = 0;
-        audio.play().catch(() => {});
-        return;
+        audio.play();
+      } else {
+        next();
       }
-
-      // queue-first behaviour: handled inside next()
-      next();
     };
 
     audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("loadedmetadata", onLoadedMeta);
     audio.addEventListener("ended", onEnded);
 
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("loadedmetadata", onLoadedMeta);
       audio.removeEventListener("ended", onEnded);
     };
   }, [isLooping, next]);
 
-  // When currentSong changes: update audio.src and attempt autoplay
+  /* ---------------- LOAD SONG ---------------- */
+
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
 
     if (!currentSong) {
       audio.pause();
       setIsPlaying(false);
       setCurrentTime(0);
       setProgress(0);
-      setDuration(0);
       return;
     }
 
-    // set source
-    audio.src = currentSong.url;
-    audio.load();
+    const src = currentSong.url || currentSong.audioUrl;
+    if (!src) return console.error("Song has no audio source", currentSong);
 
-    // attempt play
+    audio.src = src;
+    audio.load();
+    audio.volume = volume;
+    audio.loop = isLooping;
+
     audio
       .play()
       .then(() => setIsPlaying(true))
       .catch(() => setIsPlaying(false));
-
-    // sync volume & loop
-    audio.volume = volume;
-    audio.loop = isLooping;
-
-    // reset timers
-    setCurrentTime(0);
-    setProgress(0);
-    setDuration(audio.duration || 0);
   }, [currentSong, volume, isLooping]);
 
-  // ensure audio volume stays in sync if volume changes outside
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
+  /* ---------------- EXPORT ---------------- */
 
-  // EXPORT
-  const value = {
-    songs,
-    playlists: [],
+  return (
+    <MusicContext.Provider
+      value={{
+        songs,   
+        currentSong,
+        isPlaying,
+        currentTime,
+        progress,
+        volume,
+        isLooping,
 
-    currentSong,
-    isPlaying,
-    currentTime,
-    duration,
-    progress,
-    volume,
-    isLooping,
+        playlist,
+        currentIndex,
 
-    playlist,
-    currentIndex,
+        playSong,
+        togglePlay,
+        next,
+        nextSong,
+        prev,
 
-    playSong,
-    togglePlay,
-    next,
-    nextSong, // legacy alias — prevents "nextSong is not a function" errors
-    prev,
-    playRandom: useCallback(() => {
-      const i = Math.floor(Math.random() * songs.length);
-      playSong(songs[i], songs, i);
-    }, [songs, playSong]),
+        seek,
+        setVolumeLevel,
+        toggleLoop,
 
-    toggleLoop,
-    setVolumeLevel,
-    seek,
+        queue,
+        addToQueue,
+        removeFromQueue,
+        clearQueue,
 
-    addSongToPlaylist: () => {},
-    removeSongFromPlaylist: () => {},
-
-    recentHistory,
-
-    queue,
-    addToQueue,
-    removeFromQueue,
-    clearQueue,
-
-    audioRef,
-  };
-
-  return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
+        recentHistory,
+        audioRef,
+      }}
+    >
+      {children}
+    </MusicContext.Provider>
+  );
 }
