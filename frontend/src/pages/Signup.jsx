@@ -1,13 +1,8 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom"; // for link to login page
-
 
 export default function Signup() {
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080"; // get API URL from env or use default which is 8080
-  console.log("API_URL =", API_URL);
-  console.log("Signup URL =", `${API_URL}/api/users/`);
-
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -17,22 +12,16 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true); setError(""); setMessage("");
     try {
-      const res = await fetch(`${API_URL}/api/users`, { // use endpoint POST /api/users to create new user
+        // edit aja endpointnya yah backend :)
+      const res = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/auth/register`, {
         method: "POST",
-        mode: "cors", //OPTIONAL enable CORS
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ name, email, password })
       });
-      
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
-
+      if (!res.ok) throw new Error(data.message || "Signup failed");
       setMessage("Registration successful. Please login.");
-
-      setUsername(""); setPassword("");
+      setName(""); setEmail(""); setPassword("");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -40,122 +29,28 @@ export default function Signup() {
     }
   }
 
- return (
-  <div
-    style={{
-      maxWidth: 400,
-      margin: "5rem auto",          // form turun ke tengah
-      padding: "2rem",
-      textAlign: "center",          // center all
-    }}
-  >
-
-    {/* Logo */}
-    <Link to="/" style={{ display: "inline-block", marginBottom: "1rem" }}>
-      <img
-        src="picture/bluga.png"
-        alt="Logo"
-        style={{
-          width: "75px",
-          height: "75px",
-          borderRadius: "50%",
-          objectFit: "cover",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-          cursor: "pointer",
-        }}
-      />
-    </Link>
-
-    {/* Title */}
-    <h2 style={{ fontSize: "1.8rem", marginBottom: "1.5rem" }}>Sign Up</h2>
-
-    <form onSubmit={handleSubmit}>
-      {/* Username */}
-      <div style={{ marginBottom: "1.2rem", textAlign: "left" }}>
-        <label style={{ fontWeight: "500" }}>Username</label><br />
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          style={{
-            width: "100%",
-            padding: "0.75rem",
-            borderRadius: "10px",
-            border: "1px solid #999",
-            marginTop: "0.3rem",
-            boxSizing: "border-box",
-            fontSize: "0.95rem",
-          }}
-        />
-      </div>
-
-      {/* Password */}
-      <div style={{ marginBottom: "1.2rem", textAlign: "left" }}>
-        <label style={{ fontWeight: "500" }}>Password</label><br />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{
-            width: "100%",
-            padding: "0.75rem",
-            borderRadius: "10px",
-            border: "1px solid #999",
-            marginTop: "0.3rem",
-            boxSizing: "border-box",
-            fontSize: "0.95rem",
-          }}
-        />
-      </div>
-
-      {/* Button (match input size) */}
-      <button
-        type="submit"
-        disabled={loading}
-        style={{
-          width: "100%",
-          padding: "0.75rem",
-          background: "#2196f3",
-          color: "white",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer",
-          fontSize: "1rem",
-          fontWeight: "600",
-          boxSizing: "border-box",
-        }}
-      >
-        {loading ? "Signing up..." : "Sign Up"}
-      </button>
-
-      {/* Messages */}
-      {message && (
-        <div style={{ color: "green", marginTop: "1rem" }}>
-          {message}
+  return (
+    <div>
+      <h2>Sign Up</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Name</label><br />
+          <input value={name} onChange={(e)=>setName(e.target.value)} />
         </div>
-      )}
-
-      {error && (
-        <div style={{ color: "red", marginTop: "1rem" }}>
-          {error}
+        <div>
+          <label>Email</label><br />
+          <input value={email} onChange={(e)=>setEmail(e.target.value)} />
         </div>
-      )}
-
-      {/* Redirect */}
-      <div style={{ marginTop: "1rem" }}>
-        <p>
-          Already have an account?{" "}
-          <Link to="/login" style={{ color: "#2196f3", fontWeight: "bold" }}>
-            Login here
-          </Link>
-        </p>
-      </div>
-
-    </form>
-  </div>
-);
-
-
+        <div>
+          <label>Password</label><br />
+          <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
+        </div>
+        <div>
+          <button type="submit" disabled={loading}>{loading ? "Signing..." : "Sign Up"}</button>
+        </div>
+        {message && <div style={{color: "green"}}>{message}</div>}
+        {error && <div style={{color: "red"}}>{error}</div>}
+      </form>
+    </div>
+  );
 }

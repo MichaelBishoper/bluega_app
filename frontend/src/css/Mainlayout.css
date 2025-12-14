@@ -6,10 +6,7 @@
   height: 100%;
   padding: 0;
   margin: 0;
-  background: linear-gradient(135deg, #000000, #0033cc);
   overflow: hidden; /* prevents accidental vertical scrolling */
-  overflow-y: auto;
-  scrollbar-color: black;
 }
 
 /* ===========================================================
@@ -41,7 +38,7 @@
   overflow-x: auto;          /* Enable horizontal scroll */
   overflow-y: hidden;        /* ⛔ Kill vertical scroll fully */
   scroll-behavior: smooth;
-  
+
   padding: 0 20px;
 
   /* Ensure row does not shrink smaller than children */
@@ -51,13 +48,11 @@
 /* Hide scrollbar on Chrome/Safari */
 .scroll-row::-webkit-scrollbar {
   display: none;
-  
 }
 
 /* Hide scrollbar on Firefox */
 .scroll-row {
   scrollbar-width: none;
-  
 }
 
 /* ===========================================================
@@ -90,17 +85,14 @@
 
 .scroll-btn:hover {
   opacity: 1;
-  
 }
 
 .scroll-btn.left {
   left: -5px;   /* slight overlap for better UX */
-  
 }
 
 .scroll-btn.right {
   right: -5px;
-  
 }
 
 /* ===========================================================
@@ -171,7 +163,7 @@
   height: 150px;
 
   border-radius: 10px;
-  background: blue;
+  background-color: #222;
   color: #555;
 
   font-size: 2rem;

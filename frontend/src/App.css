@@ -1,14 +1,17 @@
 /* ============================
    GLOBAL BASE
 ============================ */
-  body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #000000, #0033cc);
-    font-family: 'Poppins', sans-serif;
-    color: #f1f1f1;
-    min-height: 100vh;
-  }
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #4727e4;
+  color: #f1f1f1;
+  font-family: 'Poppins', sans-serif;
+
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100vh;
+}
 
 a {
   color: inherit;
@@ -85,7 +88,7 @@ a {
   overflow-y: auto;
   overflow-x: hidden;
 
-   background: linear-gradient(135deg, #000000, #0033cc);
+  background: #1e00ff;
 
   padding: 0;
   margin: 0;
@@ -168,7 +171,7 @@ a {
 }
 
 .playlist-card {
-   background: linear-gradient(135deg, #000000, #0033cc);
+  background-color: #3e27d4;
   border-radius: 12px;
   padding: 10px;
 

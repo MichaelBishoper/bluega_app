@@ -5,6 +5,4 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.musicplayer.musicplayer.model.Playlists;
 
 public interface PlaylistsRepository extends MongoRepository<Playlists, String> {
-	// Find playlists by creatorId (used to get playlists created by a specific user)
-	java.util.List<Playlists> findByCreatorId(String creatorId);
 }

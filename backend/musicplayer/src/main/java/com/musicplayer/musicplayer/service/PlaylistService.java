@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.musicplayer.musicplayer.model.Playlists;
@@ -46,8 +44,8 @@ public class PlaylistService {
 
 
     // --- READ ---
-    public Page<Playlists> getAllPlaylists(Pageable pageable) { //pageable allows us to determine how much to show per page
-        return playlistsRepository.findAll(pageable);
+    public List<Playlists> getAllPlaylists() {
+        return playlistsRepository.findAll();
     }
 
     public Playlists getPlaylistById(String id) {
@@ -135,14 +133,6 @@ public class PlaylistService {
             playlistsRepository.deleteById(id);
         }
         return playlistToDelete;
-    }
-
-    // Get all playlists created by a specific user
-    public List<Playlists> getPlaylistsByCreator(String creatorId) {
-        if (creatorId == null || creatorId.isBlank()) {
-            throw new RuntimeException("Creator ID cannot be empty");
-        }
-        return playlistsRepository.findByCreatorId(creatorId);
     }
 
     

@@ -5,8 +5,7 @@ import java.util.List;
 import org.springframework.data.annotation.Id; //annotations  used for MongoDB collections
 import org.springframework.data.mongodb.core.index.Indexed; // annotations used to mark unique ids
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,6 +14,7 @@ import jakarta.validation.constraints.Size;
 
 @Document(collection = "users") //the annotation we just imported
 public class Users {
+    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     @Id // the other annotation we just imported
     private String id;
 
@@ -23,13 +23,9 @@ public class Users {
     private String username;
 
     @NotBlank @Size(min = 8)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) //allows only write access, not read access to prevent password leaks
     private String password; 
     
-    // List of ids of that the user follows
     private List<String> followingids;
-
-    private List<String> savedSongs;
     
     // -- NOTES --
     //constructors participate in both storing and fetching data,
@@ -40,8 +36,7 @@ public class Users {
     public Users(String username, String password, List<String> followingids) {
         this.username = username;
         this.followingids = followingids;
-        this.password = password;
-        this.savedSongs = null;
+        this.password = encoder.encode(password);
     }
 
     public String getId() {
@@ -72,14 +67,6 @@ public class Users {
         return followingids;
     }
 
-    public List<String> getSavedSongs() {
-        return savedSongs;
-    }
-
-    public void setSavedSongs(List<String> savedSongs) {
-        this.savedSongs = savedSongs;
-    }
-
     public void setFollowingids(List<String> followingids) {
         this.followingids = followingids;
     }
@@ -91,7 +78,6 @@ public class Users {
                 "id='" + id + '\'' +
                 ", username='" + username + '\'' + //we dont show the password
                 ", following=" + followingids +
-                ", savedSongs=" + savedSongs +
                 '}';
     }
 }

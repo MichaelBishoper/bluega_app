@@ -8,27 +8,17 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import "../css/SideBar.css";
-import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({
   playlists = [],
   onSelectPlaylist = () => {},
-  onDeletePlaylist,
-  onCreatePlaylist = () => {},
+  onCreatePlaylist = () => {}, 
+
   isOpen: externalOpen,
   setIsOpen: externalSetOpen,
 }) {
-  const navigate = useNavigate();
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(externalOpen ?? true);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const sidebarRef = useRef(null);
-  const startX = useRef(null);
-  const currentX = useRef(null);
-  const dragging = useRef(false);
-
-  // sync external state
   useEffect(() => {
     if (externalOpen !== undefined) setIsSidebarOpen(externalOpen);
   }, [externalOpen]);
@@ -37,7 +27,13 @@ export default function Sidebar({
     if (externalSetOpen) externalSetOpen(isSidebarOpen);
   }, [isSidebarOpen]);
 
-  // resize
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const sidebarRef = useRef(null);
+  const startX = useRef(null);
+  const currentX = useRef(null);
+  const dragging = useRef(false);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
@@ -46,7 +42,9 @@ export default function Sidebar({
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
-  // TOUCH HANDLERS
+  // ============================
+  // TOUCH START
+  // ============================
   const onTouchStart = (e) => {
     if (!isMobile) return;
 
@@ -56,64 +54,74 @@ export default function Sidebar({
 
     const sidebarWidth = 250;
 
-    if ((!isSidebarOpen && x < 20) || (isSidebarOpen && x < sidebarWidth)) {
+    if (!isSidebarOpen && x < 20) {
       dragging.current = true;
-      sidebarRef.current.style.transition = "none";
+    } else if (isSidebarOpen && x < sidebarWidth) {
+      dragging.current = true;
+    }
+
+    if (dragging.current && sidebarRef.current) {
+      sidebarRef.current.style.transition = "none"; // stop smooth animation while dragging
     }
   };
 
+  // ============================
+  // TOUCH MOVE
+  // ============================
   const onTouchMove = (e) => {
     if (!dragging.current) return;
 
     const x = e.touches[0].clientX;
     currentX.current = x;
     const diff = x - startX.current;
+
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+
     const sidebarWidth = 250;
 
-    if (!sidebarRef.current) return;
-
     if (!isSidebarOpen) {
-      sidebarRef.current.style.transform = `translateX(${Math.min(
-        0,
-        -sidebarWidth + diff
-      )}px)`;
-    } else {
-      sidebarRef.current.style.transform = `translateX(${Math.max(0, diff)}px)`;
+      const translate = Math.min(0, -sidebarWidth + diff);
+      sidebar.style.transform = `translateX(${translate}px)`;
+    }
+
+    if (isSidebarOpen) {
+      const translate = Math.max(0, diff);
+      sidebar.style.transform = `translateX(${translate}px)`;
     }
   };
 
+  // ============================
+  // TOUCH END
+  // ============================
   const onTouchEnd = () => {
     if (!dragging.current) return;
 
-    const diff = currentX.current - startX.current;
+    const diff = (currentX.current ?? 0) - (startX.current ?? 0);
 
     if (!isSidebarOpen && diff > 80) setIsSidebarOpen(true);
     else if (isSidebarOpen && diff < -80) setIsSidebarOpen(false);
 
-    sidebarRef.current.style.transition = "";
-    sidebarRef.current.style.transform = "";
+    const sidebar = sidebarRef.current;
+    if (sidebar) {
+      sidebar.style.transition = ""; // restore CSS transitions
+      sidebar.style.transform = ""; // reset so CSS handles state
+    }
+
     dragging.current = false;
   };
 
   const FALLBACK_IMAGE_URL = "/placeholder-cover.png";
 
-  // MENU
   const menuItems = [
-    {
-      icon: <Disc size={20} />,
-      label: "Album",
-      action: () => navigate("/albums"),
-    },
-    {
-      icon: <Heart size={20} />,
-      label: "Liked Music",
-    },
-    {
-      icon: <PlusSquare size={20} />,
-      label: "New Playlist",
-      action: onCreatePlaylist,
-    },
-  ];
+  { icon: <Disc size={20} />, label: "Album" },
+  { icon: <Heart size={20} />, label: "Liked Music" },
+  {
+    icon: <PlusSquare size={20} />,
+    label: "New Playlist",
+    action: () => onCreatePlaylist(),
+  },
+];
 
   return (
     <aside
@@ -129,18 +137,19 @@ export default function Sidebar({
         </button>
       </div>
 
-      <nav className="menu">
+       <nav className="menu">
         <ul>
-          {menuItems.map((item) => (
+          {menuItems.map((item, i) => (
             <li
-              key={item.label}
-              className="menu-item"
-              onClick={item.action}
-              style={{ cursor: item.action ? "pointer" : "default" }}
-            >
-              {item.icon}
-              {isSidebarOpen && <span>{item.label}</span>}
-            </li>
+  key={i}
+  className="menu-item"
+  onClick={() => item.action && item.action()}
+  style={{ cursor: item.action ? "pointer" : "default" }}
+>
+  {item.icon}
+  {isSidebarOpen && <span>{item.label}</span>}
+</li>
+
           ))}
         </ul>
       </nav>
@@ -149,9 +158,9 @@ export default function Sidebar({
         {isSidebarOpen && <h3>Your Playlists</h3>}
         <ul className="playlist-list">
           {playlists.length > 0 ? (
-            playlists.map((p) => (
+            playlists.map((p, i) => (
               <li
-                key={p.id}
+                key={i}
                 className="playlist-item"
                 onClick={() => onSelectPlaylist(p)}
               >
@@ -162,26 +171,15 @@ export default function Sidebar({
                     e.currentTarget.src = FALLBACK_IMAGE_URL;
                   }}
                 />
-
                 {isSidebarOpen && (
                   <div className="playlist-info">
                     <span className="playlist-title">{p.title}</span>
+                    {!!p.artist && (
+                      <span className="playlist-artist">{p.artist}</span>
+                    )}
                   </div>
                 )}
-
                 <Play size={14} className="play-icon" />
-
-                {isSidebarOpen && (
-                  <button
-                    className="delete-playlist-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeletePlaylist(p.id);
-                    }}
-                  >
-                    ❌
-                  </button>
-                )}
               </li>
             ))
           ) : (
