@@ -13,14 +13,19 @@ public class Songs {
     private String artist;
     private double duration;
     private String audioUrl;
+    // The ID of the user who created the Album
+    private String userId;
 
     public Songs() {}
 
-    public Songs(String title, String artist, double duration, String audioUrl) {
+    public Songs(String title, String artist, double duration, String audioUrl, String userId) {
         this.title = title;
         this.artist = artist;
         this.duration = duration;
         this.audioUrl = audioUrl;
+        this.userId = userId;
+
+    // Getter Setter Spam
     }
     public String getArtist() {
         return artist;
@@ -37,9 +42,9 @@ public class Songs {
     public String getId() {
         return id;
     }
-    // public void setId(String id) {
-    //     this.id = id;
-    // }
+    public void setId(String id) {
+        this.id = id;
+    }
     public String getTitle() {
         return title;
     }
@@ -51,6 +56,12 @@ public class Songs {
     }
     public String getAudioUrl() {
         return audioUrl;
+    }
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+    public String getUserId() {
+        return userId;
     }
 
     // For debugging purposes

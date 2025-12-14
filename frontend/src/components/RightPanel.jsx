@@ -98,18 +98,9 @@ export default function RightPanel({
           <div className="panel-content">
             {mode === "song" && (
               <>
-                <img
-                  src={data.cover || "/default-cover.jpg"}
-                  className="panel-image"
-                  alt={data.title}
-                />
-                <h2 className="panel-title">{data.title}</h2>
-                <p className="panel-text">
-                  <strong>Artist:</strong> {data.artist || "Unknown"}
-                </p>
                 <p className="panel-text">
                   <strong>Status:</strong>{" "}
-                  {isPlaying ? "Now Playing 🎶" : "Paused ⏸"}
+                  {isPlaying ? "Now Playing" : "Paused ⏸"}
                 </p>
               </>
             )}
@@ -123,18 +114,6 @@ export default function RightPanel({
                 />
                 <h2 className="panel-title">{data.title}</h2>
 
-                <p className="panel-text">
-                  <strong>Artist:</strong> {data.artist || "Unknown"}
-                </p>
-
-                <p className="panel-text">
-                  <strong>Group:</strong> {data.group || "—"}
-                </p>
-
-                <p className="panel-text">
-                  <strong>Description:</strong>{" "}
-                  {data.description || "No description."}
-                </p>
               </>
             )}
           </div>
