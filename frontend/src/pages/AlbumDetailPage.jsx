@@ -14,22 +14,7 @@ export default function AlbumDetailPage() {
     title: `New Album ${i + 1}`,
     artist: "Unknown Artist",
     image: null,
-    songs: [
-      {
-        id: `s-${i}-1`,
-        title: "Sample Song 1",
-        artist: "Unknown",
-        image: "",
-        src: "",
-      },
-      {
-        id: `s-${i}-2`,
-        title: "Sample Song 2",
-        artist: "Unknown",
-        image: "",
-        src: "",
-      },
-    ],
+    songs: [],
   }));
 
   // 🔹 FIND ALBUM (SAFE)
