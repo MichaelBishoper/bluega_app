@@ -1,9 +1,7 @@
-// ===========================================================
-//  FIXED + CLEANED App.js (FINAL)
-// ===========================================================
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
@@ -21,6 +19,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { getToken, logout } from "./utils/auth";
 import PlaylistPage from "./pages/PlaylistPage";
+import AlbumPage from "./pages/AlbumPage"
+import AlbumDetailPage from "./pages/AlbumDetailPage";
 
 import "./App.css";
 
@@ -48,6 +48,10 @@ function PrivateLayout() {
   const { currentSong, isPlaying, playSong, togglePlay, audioRef, nextSong, prevSong } =
     useMusic();
 
+    const location = useLocation();
+const isAlbumsPage = location.pathname === "/albums";
+const isAlbumDetailPage = location.pathname.startsWith("/albums/");
+
   const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
 
@@ -55,7 +59,7 @@ function PrivateLayout() {
   const [activeSongPage, setActiveSongPage] = useState(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
+  
   const [userPlaylists, setUserPlaylists] = useState([]);
 
   useEffect(() => {
@@ -225,6 +229,7 @@ function PrivateLayout() {
     setSelectedPlaylist(null);
     setCurrentPage("home");
     setIsPanelOpen(false);
+    navigate("/");
   };
 
   const handleLogout = () => logout(); // changes add here
@@ -260,6 +265,10 @@ function PrivateLayout() {
     console.error("Failed to rename playlist on server", err);
   }
   };  
+
+
+
+
   return (
     <div className="app-container">
       <Navbar onLogoClick={handleLogoClick} onLogout={handleLogout} />
@@ -274,93 +283,99 @@ function PrivateLayout() {
   setIsOpen={setIsSidebarOpen}
 />
 
+<main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
 
-        <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
-          {currentPage === "playlist" && selectedPlaylist ? (
-            //changes made here
-<PlaylistPage
-  playlist={selectedPlaylist}
-  onBack={() => setCurrentPage("home")}
-  onSelectSong={(song) => handleSelectSong(song, selectedPlaylist)}
+{isAlbumDetailPage ? (
+  <AlbumDetailPage />
 
-  updatePlaylistName={updatePlaylistName}  
+) : isAlbumsPage ? (
+  <AlbumPage />
 
-  onAddSong={(playlistId) => {
-    const newSong = {
-      id: `s-${Date.now()}`,
-      title: "Added Song",
-      artist: "Unknown",
-      image: "",
-      src: "",
-    };
+  ) : currentPage === "playlist" && selectedPlaylist ? (
 
-    setUserPlaylists((prev) =>
-      prev.map((p) =>
-        p.id === playlistId
-          ? { ...p, songs: [...(p.songs || []), newSong] }
-          : p
-      )
-    );
+    <PlaylistPage
+      playlist={selectedPlaylist}
+      onBack={() => setCurrentPage("home")}
+      onSelectSong={(song) => handleSelectSong(song, selectedPlaylist)}
+      updatePlaylistName={updatePlaylistName}
+      onAddSong={(playlistId) => {
+        const newSong = {
+          id: `s-${Date.now()}`,
+          title: "Added Song",
+          artist: "Unknown",
+          image: "",
+          src: "",
+        };
 
-    if (selectedPlaylist && selectedPlaylist.id === playlistId) {
-      const updated = {
-        ...selectedPlaylist,
-        songs: [...(selectedPlaylist.songs || []), newSong],
-      };
-      setSelectedPlaylist(updated);
-      setCurrentPlaylist(updated);
-    }
-  }}
+        setUserPlaylists((prev) =>
+          prev.map((p) =>
+            p.id === playlistId
+              ? { ...p, songs: [...(p.songs || []), newSong] }
+              : p
+          )
+        );
 
-  onRemoveSong={(playlistId, songId) => {
-    setUserPlaylists((prev) =>
-      prev.map((p) =>
-        p.id === playlistId
-          ? { ...p, songs: (p.songs || []).filter((s) => s.id !== songId) }
-          : p
-      )
-    );
+        if (selectedPlaylist && selectedPlaylist.id === playlistId) {
+          const updated = {
+            ...selectedPlaylist,
+            songs: [...(selectedPlaylist.songs || []), newSong],
+          };
+          setSelectedPlaylist(updated);
+          setCurrentPlaylist(updated);
+        }
+      }}
+      onRemoveSong={(playlistId, songId) => {
+        setUserPlaylists((prev) =>
+          prev.map((p) =>
+            p.id === playlistId
+              ? { ...p, songs: (p.songs || []).filter((s) => s.id !== songId) }
+              : p
+          )
+        );
 
-    if (selectedPlaylist && selectedPlaylist.id === playlistId) {
-      const updated = {
-        ...selectedPlaylist,
-        songs: (selectedPlaylist.songs || []).filter((s) => s.id !== songId),
-      };
-      setSelectedPlaylist(updated);
-      setCurrentPlaylist(updated);
-    }
-  }}
-/>
+        if (selectedPlaylist && selectedPlaylist.id === playlistId) {
+          const updated = {
+            ...selectedPlaylist,
+            songs: (selectedPlaylist.songs || []).filter((s) => s.id !== songId),
+          };
+          setSelectedPlaylist(updated);
+          setCurrentPlaylist(updated);
+        }
+      }}
+    />
 
+  ) : !activeSongPage ? (
 
-            
-          ) : !activeSongPage ? (
-            <MainLayout
-              playlists={userPlaylists}
-              onSelect={handleSelectPlaylist}
-              onSelectSong={handleSelectSong}
-            />
-          ) : (
-            <SongPage
-              song={activeSongPage}
-              playlistSongs={currentPlaylist?.songs || []}
-              onBack={() => setActiveSongPage(null)}
-              openPanel={() => {
-                setPanelManuallyClosed(false);
-                setIsPanelOpen(true);
-              }}
-            />
-          )}
+    <MainLayout
+      playlists={userPlaylists}
+      onSelect={handleSelectPlaylist}
+      onSelectSong={handleSelectSong}
+    />
 
-          <audio
-            ref={audioRef}
-            src={currentSong?.src || undefined}
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleDurationLoad}
-            onEnded={handleSongEnd}
-            autoPlay={isPlaying}
-          />
-        </main>
+  ) : (
+
+    <SongPage
+      song={activeSongPage}
+      playlistSongs={currentPlaylist?.songs || []}
+      onBack={() => setActiveSongPage(null)}
+      openPanel={() => {
+        setPanelManuallyClosed(false);
+        setIsPanelOpen(true);
+      }}
+    />
+
+  )}
+
+  <audio
+    ref={audioRef}
+    src={currentSong?.src || undefined}
+    onTimeUpdate={handleTimeUpdate}
+    onLoadedMetadata={handleDurationLoad}
+    onEnded={handleSongEnd}
+    autoPlay={isPlaying}
+  />
+</main>
+
 
         <RightPanel
           playlist={currentPlaylist}
@@ -417,11 +432,30 @@ export default function App() {
             )
           }
         />
-
-
-        <Route path="/add-song" element={<AddSongPage />} />
+          <Route path="/add-song" element={<AddSongPage />} />
         <Route path="/add-song/next" element={<AddSongPageNext />} />
-        
+        <Route
+  path="/albums"
+  element={
+    getToken() ? (
+      <PrivateLayout key={userId || "no-user"} />
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+<Route
+  path="/albums/:albumId"
+  element={
+    getToken() ? (
+      <PrivateLayout key={userId || "no-user"} />
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MusicProvider>
