@@ -55,6 +55,31 @@
   color: #fff;
 }
 
+/* PLAY BUTTON CONTAINER */
+.playlistPage-playControl {
+  position: absolute;
+  right: 120px;
+  bottom: 30px;
+}
+
+/* PLAY BUTTON */
+.playlistPage-playBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #1db954;
+  color: black;
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.playlistPage-playBtn:hover {
+  transform: scale(1.08);
+  background: #1ed760;
+}
+
 /* --- Song List --- */
 .playlistPage-songs {
   padding: 25px;

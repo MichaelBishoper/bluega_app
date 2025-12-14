@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../css/PlaylistPage.css";
+import { useMusic } from "../data/Music";
 
 export default function PlaylistPage({
   playlist,
@@ -9,32 +10,59 @@ export default function PlaylistPage({
   onRemoveSong,
   updatePlaylistName,
 }) {
-  // Hooks (always run)
+  // 🔥 GLOBAL MUSIC STATE (SATU SUMBER KEBENARAN)
+  const {
+    playSong,
+    togglePlay,
+    currentSong,
+    isPlaying,
+  } = useMusic();
+
+  // LOCAL UI STATE
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
 
-  // Sync input when switching playlists
+  // Sync title when playlist changes
   useEffect(() => {
     if (playlist) {
       setEditedName(playlist.title);
     }
   }, [playlist]);
 
-  // Loading protection
   if (!playlist) {
     return <div className="playlistPage-container">Loading playlist...</div>;
   }
 
   const songs = playlist.songs || [];
 
+  // Check current song
+  const isCurrent = (song) =>
+    song && currentSong && song.id === currentSong.id;
+
+  // ▶️ PLAY / ⏸ PAUSE (SAMA KAYAK SONGPAGE)
+  const handlePlayPause = () => {
+    if (!songs.length) return;
+
+    const firstSong = songs[0];
+
+    if (isCurrent(firstSong)) {
+      togglePlay();
+    } else {
+      playSong(firstSong, playlist, true);
+    }
+  };
+
   const handleSelect = (song) => {
-    if (!songs.some((s) => s.id === song.id)) return;
-    onSelectSong(song);
+    if (isCurrent(song)) {
+      togglePlay();
+    } else {
+      playSong(song, playlist, true);
+    }
   };
 
   const saveTitle = () => {
     const trimmed = editedName.trim();
-    if (trimmed === "") return;
+    if (!trimmed) return;
 
     updatePlaylistName(playlist.id, trimmed);
     setIsEditing(false);
@@ -50,6 +78,17 @@ export default function PlaylistPage({
           ← Back
         </button>
 
+        <div className="playlistPage-playControl">
+          <button
+            className={`playlistPage-playBtn ${
+              isCurrent(songs[0]) && isPlaying ? "playing" : ""
+            }`}
+            onClick={handlePlayPause}
+          >
+            {isCurrent(songs[0]) && isPlaying ? "⏸" : "▶"}
+          </button>
+        </div>
+
         <img
           src={playlist.image}
           alt={playlist.title}
@@ -57,11 +96,8 @@ export default function PlaylistPage({
         />
 
         <div className="playlistPage-info">
-
-          {/* TITLE EDIT MODE */}
           {isEditing ? (
             <div className="edit-title-container">
-
               <input
                 type="text"
                 className="edit-title-input"
@@ -95,7 +131,6 @@ export default function PlaylistPage({
               </span>
             </h1>
           )}
-
         </div>
       </div>
 
@@ -105,36 +140,41 @@ export default function PlaylistPage({
 
         {songs.length > 0 ? (
           songs.map((song, index) => (
-            <div key={song.id} className="playlistPage-songRow">
-
+            <div
+              key={song.id}
+              className={`playlistPage-songRow ${
+                isCurrent(song) ? "active" : ""
+              }`}
+              onClick={() => handleSelect(song)}
+            >
               <span className="playlistPage-index">{index + 1}</span>
 
               <img
                 src={song.image}
                 alt={song.title}
                 className="playlistPage-songImg"
-                onClick={() => handleSelect(song)}
               />
 
-              <div
-                className="playlistPage-songInfo"
-                onClick={() => handleSelect(song)}
-              >
+              <div className="playlistPage-songInfo">
                 <p className="playlistPage-title">{song.title}</p>
                 <p className="playlistPage-artistSmall">{song.artist}</p>
               </div>
 
               <button
                 className="playlistPage-removeBtn"
-                onClick={() => onRemoveSong(playlist.id, song.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveSong(playlist.id, song.id);
+                }}
               >
                 ✕
               </button>
-
             </div>
           ))
         ) : (
-          <p className="playlistPage-noSongs">This playlist has no songs yet.</p>
+          <p className="playlistPage-noSongs">
+            This playlist has no songs yet.
+          </p>
         )}
       </div>
 
