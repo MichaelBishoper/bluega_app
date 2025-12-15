@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_URL from "../utils/api";
 import "../css/PlaylistPage.css";
 import { useMusic } from "../data/Music";
 
@@ -21,11 +22,11 @@ export default function AlbumDetailPage() {
     const fetchAlbumData = async () => {
       try {
         const albumRes = await axios.get(
-          `http://localhost:8080/api/albums/${albumId}`
+          `${API_URL}/api/albums/${albumId}`
         );
 
         const songsRes = await axios.get(
-          `http://localhost:8080/api/albums/${albumId}/songs`
+          `${API_URL}/api/albums/${albumId}/songs`
         );
 
         setAlbum(albumRes.data);

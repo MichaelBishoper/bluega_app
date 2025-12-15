@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import API_URL from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import"../css/AddSongPage.css"
 
@@ -34,7 +35,7 @@ export default function AddSongPage() {
 
         try {
             const res = await axios.post (
-                `http://localhost:8080/api/albums?userId=${userId}`,
+                `${API_URL}/api/albums?userId=${userId}`,
                 formData,
                   {
                     headers: {

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom"; // for link to login page
+import API_URL from "../utils/api";
 
 
 export default function Signup() {
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080"; // get API URL from env or use default which is 8080
   console.log("API_URL =", API_URL);
   console.log("Signup URL =", `${API_URL}/api/users/`);
 

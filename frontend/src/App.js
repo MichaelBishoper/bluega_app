@@ -23,10 +23,11 @@ import AlbumPage from "./pages/AlbumPage"
 import AlbumDetailPage from "./pages/AlbumDetailPage";
 
 import "./App.css";
+import API_URL from "./utils/api";
 
 // Base URL of your Spring Boot playlist API
-const PLAYLISTS_API_BASE = "http://localhost:8080/api/playlists";
-const USERS_API_BASE = "http://localhost:8080/api/users";
+const PLAYLISTS_API_BASE = `${API_URL}/api/playlists`;
+const USERS_API_BASE = `${API_URL}/api/users`;
 
 // change host/port if your backend is different
 

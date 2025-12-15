@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import API_URL from "../utils/api";
 
 export default function AddSongPageNext() {
 
@@ -63,7 +64,7 @@ const styles = {
         const fetchAlbum = async () => {
             try {
             const res = await axios.get(
-                `http://localhost:8080/api/albums/${albumId}`
+                `${API_URL}/api/albums/${albumId}`
             );
             setAlbumArtist(res.data.artist);
             } catch (err) {
@@ -120,7 +121,7 @@ const styles = {
         const order = i + 1;
 
         await axios.post(
-            `http://localhost:8080/api/albums/${albumId}/songs`,
+            `${API_URL}/api/albums/${albumId}/songs`,
             formData,
             {
                 params: {

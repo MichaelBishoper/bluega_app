@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_URL from "../utils/api";
 import "../css/AlbumPage.css";
 
 export default function AlbumPage() {
@@ -15,7 +16,7 @@ export default function AlbumPage() {
   useEffect(() => {
     const fetchAlbums = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/albums");
+        const res = await axios.get(`${API_URL}/api/albums`);
         setAlbums(res.data);
       } catch (err) {
         console.error("Failed to fetch albums:", err);

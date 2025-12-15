@@ -52,7 +52,8 @@
 
 
 import React, { useState } from "react";
-import { Navigate, Link } from "react-router-dom"; 
+import { Navigate, Link } from "react-router-dom";
+import API_URL from "../utils/api";
 
 export default function Login() {
   const [username, setUsername] = useState(""); 
@@ -78,7 +79,6 @@ export default function Login() {
     setError("");
 
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
       const res = await fetch(`${API_URL}/api/users/login`, { // updated endpoint to /api/users/login matching backend
         method: "POST",
         headers: { "Content-Type": "application/json" },
