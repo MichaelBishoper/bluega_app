@@ -37,10 +37,10 @@ export default function MainLayout({
   const CARD_WIDTH = 170; // 150px + padding/gap
   const VISIBLE_CARDS = 5;
 
-  const recommendedRef = useRef(null);
+  // const recommendedRef = useRef(null);
   const recentRef = useRef(null);
 
-  const [recommendedIndex, setRecommendedIndex] = useState(0);
+  // const [recommendedIndex, setRecommendedIndex] = useState(0);
   const [recentIndex, setRecentIndex] = useState(0);
 
   const slideRow = (ref, indexSetter, index, totalLength, direction) => {
@@ -117,7 +117,7 @@ export default function MainLayout({
 {/* ROW 3 — RECOMMENDED (ALL SONGS FIXED + CORRECT SLIDING) */}
 {/* ===================================================== */}
 
-<div className="playlist-section">
+{/* <div className="playlist-section">
   <h2>Recommended For You</h2>
 
   <div className="scroll-wrapper">
@@ -170,7 +170,7 @@ export default function MainLayout({
       ▶
     </button>
   </div>
-</div>
+</div> */}
 
 
         {/* ===================================================== */}
