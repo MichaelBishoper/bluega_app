@@ -12,132 +12,136 @@ const MusicContext = createContext();
 export const useMusic = () => useContext(MusicContext);
 
 export function MusicProvider({ children }) {
-  const [songs, setSongs] = useState([]);
   const audioRef = useRef(new Audio());
 
-  const [currentSong, setCurrentSong] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  /* ================= STATE ================= */
 
+  const [currentSong, setCurrentSong] = useState(null);
+  const [playlist, setPlaylist] = useState(null); // album OR playlist
+  const [playlistTracks, setPlaylistTracks] = useState([]); // 🔑 normalized
+  const [currentIndex, setCurrentIndex] = useState(-1);
+
+  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const [volume, setVolume] = useState(1);
   const [isLooping, setIsLooping] = useState(false);
 
-  const [playlist, setPlaylist] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [queue, setQueue] = useState([]); // NGENTOT GW MAU TIDUR
 
-  const [queue, setQueue] = useState([]);
-  const [recentHistory, setRecentHistory] = useState([]);
+  const [songs, setSongs] = useState([]);          // REQUIRED
+  const [recentHistory, setRecentHistory] = useState([]); // REQUIRED
 
-  /* ---------------- QUEUE ---------------- */
+  /* ================= HELPERS ================= */
 
-  const addToQueue = useCallback((song) => {
-    if (song) setQueue((q) => [...q, song]);
-  }, []);
+  const normalizeTracks = (list) => {
+    if (!list) return [];
 
-  const removeFromQueue = useCallback(
-    (index) => setQueue((q) => q.filter((_, i) => i !== index)),
-    []
-  );
+    // album
+    if (Array.isArray(list.songs)) return list.songs;
 
-  const clearQueue = useCallback(() => setQueue([]), []);
+    // playlist (already hydrated elsewhere)
+    if (Array.isArray(list.tracks)) return list.tracks;
 
-  /* ---------------- RECENT ---------------- */
+    return [];
+  };
 
-  const pushToRecent = useCallback((song) => {
+  /* ================= PLAY ================= */
+
+  const playSong = useCallback((song, list = null, index = -1) => {
+    if (!song) return;
+
+    const audio = audioRef.current;
+    const src = song.url || song.audioUrl;
+
+    if (!src) {
+      console.error("Song has no audio source", song);
+      return;
+    }
+
+    // normalize playlist
+    if (list?.songs) {
+      setPlaylist(list);
+      setSongs(list.songs);
+      setCurrentIndex(index);
+    } else {
+      setPlaylist(null);
+      setSongs([]);
+      setCurrentIndex(-1);
+    }
+
+    setCurrentSong(song);
+
+    // recent history (no duplicates)
     setRecentHistory((prev) => {
       const filtered = prev.filter((s) => s.id !== song.id);
-      return [{ ...song, playedAt: Date.now() }, ...filtered].slice(0, 50);
+      return [song, ...filtered].slice(0, 20);
     });
-  }, []);
 
-  /* ---------------- PLAY ---------------- */
+    audio.src = src;
+    audio.volume = volume;
+    audio.loop = isLooping;
 
-  const playSong = useCallback(
-    (song, list = null, index = 0) => {
-      if (!song) return;
-      setPlaylist(list);
-      setCurrentIndex(index);
-      setCurrentSong(song);
-      pushToRecent(song);
-    },
-    [pushToRecent]
-  );
+    audio.play()
+      .then(() => setIsPlaying(true))
+      .catch(() => setIsPlaying(false));
+  }, [volume, isLooping]);
+
 
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
     if (!currentSong) return;
 
-    if (isPlaying) {
+    if (audio.paused) {
+      audio.play().then(() => setIsPlaying(true));
+    } else {
       audio.pause();
       setIsPlaying(false);
-    } else {
-      audio
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false));
     }
-  }, [currentSong, isPlaying]);
+  }, [currentSong]);
 
-  /* ---------------- NAV ---------------- */
+  /* ================= NAV ================= */
 
   const next = useCallback(() => {
     if (queue.length > 0) {
-      const nextSong = queue[0];
-      setQueue((q) => q.slice(1));
+      const [nextSong, ...rest] = queue;
+      setQueue(rest);
       playSong(nextSong, playlist, 0);
       return;
     }
 
-    if (!playlist?.songs?.length) {
-      audioRef.current?.pause();
-      setIsPlaying(false);
-      return;
-    }
+    if (!playlistTracks.length) return;
 
-    const nextIndex = (currentIndex + 1) % playlist.songs.length;
-    playSong(playlist.songs[nextIndex], playlist, nextIndex);
-  }, [queue, playlist, currentIndex, playSong]);
+    const nextIndex = (currentIndex + 1) % playlistTracks.length;
+    playSong(playlistTracks[nextIndex], playlist, nextIndex);
+  }, [queue, playlistTracks, currentIndex, playSong, playlist]);
 
   const prev = useCallback(() => {
-    if (!playlist?.songs?.length) return;
+    if (!playlistTracks.length) return;
 
     const prevIndex =
-      (currentIndex - 1 + playlist.songs.length) % playlist.songs.length;
+      (currentIndex - 1 + playlistTracks.length) % playlistTracks.length;
 
-    playSong(playlist.songs[prevIndex], playlist, prevIndex);
-  }, [playlist, currentIndex, playSong]);
+    playSong(playlistTracks[prevIndex], playlist, prevIndex);
+  }, [playlistTracks, currentIndex, playSong, playlist]);
 
-  const nextSong = next; // legacy alias
+  // 🔥 LEGACY ALIASES (DO NOT REMOVE YET)
+const nextSong = next;
+const prevSong = prev;
 
-  /* ---------------- CONTROLS ---------------- */
-
-  const seek = useCallback((percent) => {
-    const audio = audioRef.current;
-    if (!audio?.duration) return;
-
-    const p = Math.max(0, Math.min(100, percent));
-    audio.currentTime = (p / 100) * audio.duration;
-  }, []);
-
-  const setVolumeLevel = useCallback((v) => {
-    const val = Math.max(0, Math.min(1, v));
-    setVolume(val);
-    audioRef.current.volume = val;
-  }, []);
-
-  const toggleLoop = useCallback(() => setIsLooping((v) => !v), []);
-
-  /* ---------------- AUDIO EVENTS ---------------- */
+  /* ================= AUDIO EVENTS ================= */
 
   useEffect(() => {
     const audio = audioRef.current;
 
     const onTimeUpdate = () => {
-      if (!audio.duration) return;
-      setCurrentTime(audio.currentTime);
-      setProgress((audio.currentTime / audio.duration) * 100);
+      setCurrentTime(audio.currentTime || 0);
+      setDuration(audio.duration || 0);
+      if (audio.duration) {
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
     };
 
     const onEnded = () => {
@@ -156,68 +160,75 @@ export function MusicProvider({ children }) {
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("ended", onEnded);
     };
-  }, [isLooping, next]);
+  }, [next, isLooping]);
 
-  /* ---------------- LOAD SONG ---------------- */
+  /* ================= CONTROLS ================= */
 
-  useEffect(() => {
+  const seek = (percent) => {
     const audio = audioRef.current;
+    if (!audio.duration) return;
+    audio.currentTime = (percent / 100) * audio.duration;
+  };
 
-    if (!currentSong) {
-      audio.pause();
-      setIsPlaying(false);
-      setCurrentTime(0);
-      setProgress(0);
-      return;
-    }
+  const setVolumeLevel = (v) => {
+    const val = Math.max(0, Math.min(1, v));
+    setVolume(val);
+    audioRef.current.volume = val;
+  };
 
-    const src = currentSong.url || currentSong.audioUrl;
-    if (!src) return console.error("Song has no audio source", currentSong);
+  const toggleLoop = () => setIsLooping((v) => !v);
 
-    audio.src = src;
-    audio.load();
-    audio.volume = volume;
-    audio.loop = isLooping;
+  /* ================= QUEUE ================= */
 
-    audio
-      .play()
-      .then(() => setIsPlaying(true))
-      .catch(() => setIsPlaying(false));
-  }, [currentSong, volume, isLooping]);
+  const addToQueue = (song) => song && setQueue((q) => [...q, song]);
+  const removeFromQueue = (i) =>
+    setQueue((q) => q.filter((_, idx) => idx !== i));
+  const clearQueue = () => setQueue([]);
 
-  /* ---------------- EXPORT ---------------- */
+  /* ================= EXPORT ================= */
 
   return (
     <MusicContext.Provider
       value={{
-        songs,   
+        // playback
         currentSong,
         isPlaying,
         currentTime,
+        duration,
         progress,
-        volume,
-        isLooping,
 
+        // playlist
         playlist,
+        playlistTracks,
         currentIndex,
 
+        // controls
         playSong,
         togglePlay,
         next,
-        nextSong,
         prev,
-
         seek,
+
+        // legacy
+        nextSong,
+        prevSong,
+
+        // audio
+        volume,
         setVolumeLevel,
+        isLooping,
         toggleLoop,
 
+        // queue
         queue,
         addToQueue,
         removeFromQueue,
         clearQueue,
 
-        recentHistory,
         audioRef,
+
+        songs,              // REQUIRED
+        recentHistory,      // REQUIRED
       }}
     >
       {children}

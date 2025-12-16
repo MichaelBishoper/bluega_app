@@ -22,15 +22,37 @@ export default function AlbumDetailPage() {
     const fetchAlbumData = async () => {
       try {
         const albumRes = await axios.get(
-          `${API_URL}/api/albums/${albumId}`
+          `http://localhost:8080/api/albums/${albumId}`
         );
 
-        const songsRes = await axios.get(
-          `${API_URL}/api/albums/${albumId}/songs`
+        const albumData = albumRes.data;
+        setAlbum(albumData);
+
+        // guard
+        if (!albumData.songs || albumData.songs.length === 0) {
+          setSongs([]);
+          return;
+        }
+
+        const sortedAlbumSongs = [...albumData.songs].sort(
+          (a, b) => a.order - b.order
         );
 
-        setAlbum(albumRes.data);
-        setSongs(songsRes.data || []);
+        const hydratedSongs = await Promise.all(
+          sortedAlbumSongs.map(async (as) => {
+            const res = await axios.get(
+              `http://localhost:8080/api/songs/${as.songId}`
+            );
+
+            return {
+              ...res.data,
+              order: as.order,
+              albumImgUrl: albumData.imgUrl,
+            };
+          })
+        );
+
+        setSongs(hydratedSongs);
       } catch (err) {
         console.error("Failed to load album:", err);
       } finally {
@@ -40,6 +62,7 @@ export default function AlbumDetailPage() {
 
     fetchAlbumData();
   }, [albumId]);
+
 
   // =========================
   // Guards
@@ -71,7 +94,7 @@ export default function AlbumDetailPage() {
     if (isCurrent(firstSong)) {
       togglePlay();
     } else {
-      playSong(firstSong, album, true);
+      playSong(firstSong, { songs }, 0)
     }
   };
 

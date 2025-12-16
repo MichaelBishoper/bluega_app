@@ -29,27 +29,34 @@ export default function PlayerBar() {
     progress,
     seek,
     currentTime,
-    duration,
     queue,
     removeFromQueue,
+    audioRef,
   } = useMusic();
 
   const [showQueue, setShowQueue] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
-  const toggleQueuePanel = () => setShowQueue((prev) => !prev);
+  const toggleQueuePanel = () => setShowQueue((p) => !p);
+
+  /* ================= SAFE DERIVED VALUES ================= */
+
+  const duration = audioRef?.current?.duration || 0;
 
   const songCover =
-  currentSong?.albumCover ??
-  "https://placehold.co/45x45/4361ee/ffffff?text=♫";
+    currentSong?.albumCover ||
+    currentSong?.cover ||
+    "https://placehold.co/45x45/4361ee/ffffff?text=♫";
 
-  const songTitle = currentSong?.title || "No Song Playing";
+  const songTitle = currentSong?.title ?? "No Song Playing";
+
   const songArtist =
-    currentSong?.artist ||
-    currentSong?.albumArtist ||
+    currentSong?.artist ??
+    currentSong?.albumArtist ??
     "—";
 
-  // ---------------- TIME FORMAT HELPERS ----------------
+  /* ================= TIME FORMAT ================= */
+
   const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return "0:00";
     const m = Math.floor(seconds / 60);
@@ -62,22 +69,24 @@ export default function PlayerBar() {
     return `-${formatTime(Math.max(duration - currentTime, 0))}`;
   };
 
-  // ---------------- INTERACTIONS ----------------
+  /* ================= INTERACTIONS ================= */
+
   const handleSeek = (e) => {
-    const v = parseFloat(e.target.value);
+    const v = Number(e.target.value);
     if (!isNaN(v)) seek(v);
   };
 
   const handleVolumeChange = (e) => {
-    const v = parseFloat(e.target.value);
+    const v = Number(e.target.value);
     if (!isNaN(v)) setVolumeLevel(v);
   };
 
+  /* ================= RENDER ================= */
+
   return (
     <>
-      {/* ================= PLAYER BAR ================= */}
       <div className="player-bar">
-        {/* LEFT — Song Info */}
+        {/* LEFT */}
         <div className="player-left">
           <img
             src={songCover}
@@ -95,7 +104,7 @@ export default function PlayerBar() {
           </div>
         </div>
 
-        {/* CENTER — Controls */}
+        {/* CENTER */}
         <div className="player-center">
           <div className="player-controls">
             <button className="icon-btn" onClick={prev}>
@@ -115,9 +124,10 @@ export default function PlayerBar() {
             </button>
           </div>
 
-          {/* PROGRESS BAR */}
           <div className="progress-container">
-            <span className="time-current">{formatTime(currentTime)}</span>
+            <span className="time-current">
+              {formatTime(currentTime)}
+            </span>
 
             <input
               type="range"
@@ -129,13 +139,14 @@ export default function PlayerBar() {
               onChange={handleSeek}
             />
 
-            <span className="time-total">{formatTimeLeft()}</span>
+            <span className="time-total">
+              {formatTimeLeft()}
+            </span>
           </div>
         </div>
 
-        {/* RIGHT — Actions */}
+        {/* RIGHT */}
         <div className="player-right">
-          {/* LIKE */}
           <button className="icon-btn" onClick={() => setIsLiked((p) => !p)}>
             <Heart
               size={18}
@@ -144,7 +155,6 @@ export default function PlayerBar() {
             />
           </button>
 
-          {/* LOOP */}
           <button className="icon-btn" onClick={toggleLoop}>
             <Repeat
               size={18}
@@ -152,12 +162,10 @@ export default function PlayerBar() {
             />
           </button>
 
-          {/* QUEUE BUTTON */}
           <button className="icon-btn" onClick={toggleQueuePanel}>
             <ListMusic size={20} />
           </button>
 
-          {/* VOLUME */}
           <div className="volume-control">
             <Volume2 size={18} />
             <input
@@ -173,7 +181,7 @@ export default function PlayerBar() {
         </div>
       </div>
 
-      {/* ================= QUEUE PANEL ================= */}
+      {/* QUEUE */}
       <div className={`queue-popup ${showQueue ? "open" : ""}`}>
         <div className="queue-header">
           <h3>Queue</h3>
@@ -183,14 +191,14 @@ export default function PlayerBar() {
         </div>
 
         <div className="queue-list">
-          {queue.length === 0 && (
+          {!queue?.length && (
             <p className="empty-text">Your queue is empty.</p>
           )}
 
-          {queue.map((song, i) => (
+          {queue?.map((song, i) => (
             <div key={i} className="queue-item">
               <img
-                src={song.cover ?? "/default-cover.png"}
+                src={song.cover || song.albumCover || "/default-cover.png"}
                 className="queue-cover"
                 alt={song.title}
               />
@@ -200,7 +208,10 @@ export default function PlayerBar() {
                 <div className="queue-artist">{song.artist}</div>
               </div>
 
-              <button className="remove-btn" onClick={() => removeFromQueue(i)}>
+              <button
+                className="remove-btn"
+                onClick={() => removeFromQueue(i)}
+              >
                 Remove
               </button>
             </div>

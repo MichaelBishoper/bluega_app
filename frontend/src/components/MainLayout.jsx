@@ -113,66 +113,6 @@ export default function MainLayout({
           </div>
         </div>
 
-{/* ===================================================== */}
-{/* ROW 3 — RECOMMENDED (ALL SONGS FIXED + CORRECT SLIDING) */}
-{/* ===================================================== */}
-
-{/* <div className="playlist-section">
-  <h2>Recommended For You</h2>
-
-  <div className="scroll-wrapper">
-    <button
-      className="scroll-btn left"
-      onClick={() => {
-        slideRow(
-          recommendedRef,
-          setRecommendedIndex,
-          recommendedIndex,
-          6,             // only 6 recommended songs
-          "left"
-        );
-      }}
-    >
-      ◀
-    </button>
-
-    <div className="scroll-row" ref={recommendedRef}>
-      {songs.slice(0, 6).map((song, index) => (
-        <div
-          key={index}
-          className="mainlayout-card"
-          onClick={() => onSelectSong(song)}
-          tabIndex={0}
-        >
-          <img
-            src={song.cover}
-            alt={song.title}
-            className="mainlayout-image"
-          />
-          <div className="mainlayout-title">{song.title}</div>
-          <div className="mainlayout-artist">{song.artist}</div>
-        </div>
-      ))}
-    </div>
-
-    <button
-      className="scroll-btn right"
-      onClick={() => {
-        slideRow(
-          recommendedRef,
-          setRecommendedIndex,
-          recommendedIndex,
-          6,            // only 6 recommended songs
-          "right"
-        );
-      }}
-    >
-      ▶
-    </button>
-  </div>
-</div> */}
-
-
         {/* ===================================================== */}
         {/* ROW 4 — RECENTLY PLAYED */}
         {/* ===================================================== */}
