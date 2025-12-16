@@ -85,3 +85,25 @@
 .create-container-album button[type="submit"]:hover {
   background: #0b7dda;
 }
+
+/* Upload button used in Profile and other places to link to the upload page */
+.upload-album-btn {
+  margin-top: 10px;
+  padding: 10px 16px;
+
+  background: #1d4ed8;
+  border: none;
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.upload-album-btn:hover {
+  background: #2563eb;
+  transform: scale(1.03);
+}

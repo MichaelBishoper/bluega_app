@@ -104,6 +104,12 @@ export default function Sidebar({
       label: "Album",
       action: () => navigate("/albums"),
     },
+
+    {
+      icon: <PlusSquare size={20} />,
+      label: "Add Song",
+      action: () => navigate("/add-song"),
+    },
     {
       icon: <Heart size={20} />,
       label: "Liked Music",

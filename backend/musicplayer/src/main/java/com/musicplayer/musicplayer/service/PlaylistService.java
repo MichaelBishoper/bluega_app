@@ -18,7 +18,9 @@ public class PlaylistService {
     private PlaylistsRepository playlistsRepository;
     // --- CREATE ---
     //You create a new object first if you want to modify fields
-  public Playlists createPlaylist(String playlistName, String creatorId, List<String> songIds) {
+    public Playlists createPlaylist(String playlistName, String creatorId, List<String> songIds) {
+
+        // 1. Validate input
         if (playlistName == null || playlistName.isBlank()) {
             throw new RuntimeException("Playlist name cannot be empty");
         }
@@ -26,17 +28,31 @@ public class PlaylistService {
             throw new RuntimeException("Creator ID cannot be empty");
         }
 
-        List<String> uniqueSongs = songIds != null ? new ArrayList<>(new HashSet<>(songIds)) : new ArrayList<>();
+        // 2. Normalize name (same idea as username trim)
+        String name = playlistName.trim();
 
+        // 3. Uniqueness check (same pattern as Users POST)
+        Playlists existing = playlistsRepository.findByPlaylistName(name);
+        if (existing != null) {
+            throw new RuntimeException("Playlist name already exists");
+        }
+
+        // 4. Deduplicate songs
+        List<String> uniqueSongs =
+            songIds != null ? new ArrayList<>(new HashSet<>(songIds)) : new ArrayList<>();
+
+        // 5. THIS LINE — create the Playlist object
         Playlists playlist = new Playlists(
-            playlistName,
-            creatorId,
-            uniqueSongs,
-            new ArrayList<>() // savedByUserIds start empty
+            name,            // playlistName
+            creatorId,       // creatorId
+            uniqueSongs,     // songIds
+            new ArrayList<>()// savedByUserIds
         );
 
-        return playlistsRepository.save(playlist); 
+        // 6. Save to MongoDB
+        return playlistsRepository.save(playlist);
     }
+
 
     // Use this if you don't want to modify any fields
     // public Playlists addPlaylists(Playlists playlist) {
@@ -56,12 +72,25 @@ public class PlaylistService {
     
     // --- UPDATE ---
     // Rename playlist
-    public Playlists renamePlaylist(String id, String newName) { //IMPORTANT USE "newName" AS PARAMETER NAME NOT "playlistName"
+    public Playlists renamePlaylist(String id, String newName) {
+        if (newName == null || newName.isBlank()) {
+            throw new RuntimeException("Playlist name cannot be empty");
+        }
+
         Playlists playlist = playlistsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
-        playlist.setPlaylistName(newName);
+
+        String name = newName.trim();
+
+        Playlists other = playlistsRepository.findByPlaylistName(name);
+        if (other != null && !other.getId().equals(playlist.getId())) {
+            throw new RuntimeException("Playlist name already exists");
+        }
+
+        playlist.setPlaylistName(name);
         return playlistsRepository.save(playlist);
     }
+
 
     
     // Add song (no duplicates)

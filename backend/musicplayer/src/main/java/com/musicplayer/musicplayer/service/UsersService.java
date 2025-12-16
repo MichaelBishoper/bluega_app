@@ -4,6 +4,7 @@ package com.musicplayer.musicplayer.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -83,23 +84,41 @@ public class UsersService {
 
     public Users updateUser(String id, Users newUserData) {
         Users existingUser = usersRepository.findById(id).orElse(null);
-        if (existingUser == null) {
-            return null;
+        if (existingUser == null) return null;
+
+        // Username update
+        if (newUserData.getUsername() != null) {
+            String newUsername = newUserData.getUsername().trim();
+            if (newUsername.isBlank()) {
+                throw new RuntimeException("Username cannot be empty");
+            }
+
+            Users other = usersRepository.findByUsername(newUsername);
+            // If someone else already has it, block
+            if (other != null && !other.getId().equals(existingUser.getId())) {
+                throw new RuntimeException("Username already exists");
+            }
+
+            existingUser.setUsername(newUsername);
         }
 
-        // Only update the fields that were actually sent (non-null)
-        if (newUserData.getUsername() != null) {
-            existingUser.setUsername(newUserData.getUsername());
-        }
+        // Password update
         if (newUserData.getPassword() != null) {
-            existingUser.setPassword(passwordEncoder.encode(newUserData.getPassword())); //added password encoding/hashing here
+            existingUser.setPassword(passwordEncoder.encode(newUserData.getPassword()));
         }
+
+        // Following update
         if (newUserData.getFollowingids() != null) {
             existingUser.setFollowingids(newUserData.getFollowingids());
         }
 
-        return usersRepository.save(existingUser);
+        try {
+            return usersRepository.save(existingUser);
+        } catch (DuplicateKeyException e) {
+            throw new RuntimeException("Username already exists");
+        }
     }
+
 
     public void deleteUser(String id) {
         // Remove this id from other users' following lists
