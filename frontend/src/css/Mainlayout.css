@@ -233,3 +233,55 @@
   font-size: 14px;
   margin-top: 5px;
 }
+
+/* ===========================================================
+   ALBUM PLACEHOLDER (MATCH ALBUM SIZE)
+   =========================================================== */
+/* Card size */
+.mainlayout-card {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+/* Placeholder box (FULL KOTAK) */
+.album-placeholder-box {
+  width: 150px;
+  height: 150px;
+
+  background: #111;
+  border: 2px dashed #444;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Plus icon */
+.album-plus {
+  font-size: 48px;
+  color: #777;
+}
+
+/* Title under box */
+.mainlayout-title {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+  color: #ccc;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hover effect (optional but recommended) */
+.add-album:hover .album-placeholder-box {
+  border-color: #0741ff;
+}
+
+.add-album:hover .album-plus {
+  color: #008ae0;
+}
+
+

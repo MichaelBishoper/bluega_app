@@ -30,35 +30,52 @@ export default function MainLayout({
   const handleSeek = (e) => seek(Number(e.target.value));
   const handleVolume = (e) => setVolumeLevel(parseFloat(e.target.value));
 
+  //added here
+  const albumPlaceholder = {
+  id: "add-album",
+  title: "Add Album",
+  artist: "",
+  cover: null,
+  isPlaceholder: true,
+};
+
   /* ================================================================
       SLIDER SYSTEM → translateX (NOT scrollBy)
       Each row slides in increments of 5 cards → like Spotify
   ================================================================ */
-  const CARD_WIDTH = 170; // 150px + padding/gap
+  const CARD_WIDTH = 170; 
   const VISIBLE_CARDS = 5;
 
-  // const recommendedRef = useRef(null);
+ const albumRowRef = useRef(null);
   const recentRef = useRef(null);
 
-  // const [recommendedIndex, setRecommendedIndex] = useState(0);
+  const [albumPageIndex, setAlbumPageIndex] = useState(0);
+  const albums = songs.slice(0, 6); // sementara dari songs ini kalo mau ganti ke album dari sini
+  const albumsWithPlaceholder = [...albums, albumPlaceholder];
+
+
   const [recentIndex, setRecentIndex] = useState(0);
 
-  const slideRow = (ref, indexSetter, index, totalLength, direction) => {
-    const maxIndex = Math.ceil(totalLength / VISIBLE_CARDS) - 1;
+const slideRecentRow = (direction) => {
+  const maxPage =
+  Math.ceil(albumsWithPlaceholder.length / VISIBLE_CARDS) - 1;
 
-    let newIndex = index + (direction === "right" ? 1 : -1);
+  let nextPage =
+    direction === "right"
+      ? recentIndex + 1
+      : recentIndex - 1;
 
-    if (newIndex < 0) newIndex = 0;
-    if (newIndex > maxIndex) newIndex = maxIndex;
+  if (nextPage < 0) nextPage = 0;
+  if (nextPage > maxPage) nextPage = maxPage;
 
-    indexSetter(newIndex);
+  setRecentIndex(nextPage);
 
-    const offset = newIndex * CARD_WIDTH * VISIBLE_CARDS;
+  const offset = nextPage * CARD_WIDTH * VISIBLE_CARDS;
 
-    if (ref.current) {
-      ref.current.style.transform = `translateX(-${offset}px)`;
-    }
-  };
+  if (recentRef.current) {
+    recentRef.current.style.transform = `translateX(-${offset}px)`;
+  }
+};
 
   const recentSongs =
     recentHistory.length > 0 ? recentHistory : songs.slice(0, 5);
@@ -113,6 +130,63 @@ export default function MainLayout({
           </div>
         </div>
 
+{/* ===================================================== */}
+{/* ROW 3 — ALBUMS */}
+{/* ===================================================== */}
+
+<div className="playlist-section">
+  <h2>Albums</h2>
+
+  <div className="scroll-wrapper">
+    <button
+      className="scroll-btn left"
+      onClick={() => slideRecentRow("left")}
+    >
+      ◀
+    </button>
+
+    <div className="scroll-row" ref={albumRowRef}>
+      {albumsWithPlaceholder.map((album, index) => (
+        <div
+          key={album.id || index}
+          className={`mainlayout-card ${
+            album.isPlaceholder ? "add-album" : ""
+          }`}
+          onClick={() => {
+            if (!album.isPlaceholder) onSelectSong(album);
+          }}
+          tabIndex={0}
+        >
+          {/* COVER / PLACEHOLDER */}
+          {album.isPlaceholder ? (
+            <div className="album-placeholder-box">
+              <span className="album-plus">+</span>
+            </div>
+          ) : (
+            <img
+              src={album.cover}
+              alt={album.title}
+              className="mainlayout-image"
+            />
+          )}
+
+          {/* TITLE (DI BAWAH KOTAK) */}
+          <p className="mainlayout-title">
+            {album.isPlaceholder ? "Add Album" : album.title}
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <button
+      className="scroll-btn right"
+      onClick={() => slideRecentRow("right")}
+    >
+      ▶
+    </button>
+  </div>
+</div>
+
         {/* ===================================================== */}
         {/* ROW 4 — RECENTLY PLAYED */}
         {/* ===================================================== */}
@@ -120,21 +194,12 @@ export default function MainLayout({
           <h2>Recently Played</h2>
 
           <div className="scroll-wrapper">
-            <button
-              className="scroll-btn left"
-              onClick={() =>
-                slideRow(
-                  recentRef,
-                  setRecentIndex,
-                  recentIndex,
-                  recentSongs.length,
-                  "left"
-                )
-              }
-            >
-              ◀
-            </button>
-
+             <button
+  className="scroll-btn left"
+  onClick={() => slideRecentRow("left")}
+>
+  ◀
+</button>
             <div className="scroll-row" ref={recentRef}>
               {recentSongs.map((song, index) => (
                 <div
@@ -155,19 +220,12 @@ export default function MainLayout({
             </div>
 
             <button
-              className="scroll-btn right"
-              onClick={() =>
-                slideRow(
-                  recentRef,
-                  setRecentIndex,
-                  recentIndex,
-                  recentSongs.length,
-                  "right"
-                )
-              }
-            >
-              ▶
-            </button>
+  className="scroll-btn right"
+  onClick={() => slideRecentRow("right")}
+>
+  ▶
+</button>
+
           </div>
         </div>
 
