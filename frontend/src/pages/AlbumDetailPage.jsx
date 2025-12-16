@@ -15,15 +15,19 @@ export default function AlbumDetailPage() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  //used for playlist addition
+  const [myPlaylists, setMyPlaylists] = useState([]);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [songToAdd, setSongToAdd] = useState(null);
+  const [plistQuery, setPlistQuery] = useState("");
+
   // =========================
   // Fetch album + songs
   // =========================
   useEffect(() => {
     const fetchAlbumData = async () => {
       try {
-        const albumRes = await axios.get(
-          `http://localhost:8080/api/albums/${albumId}`
-        );
+        const albumRes = await axios.get(`${API_URL}/api/albums/${albumId}`);
 
         const albumData = albumRes.data;
         setAlbum(albumData);
@@ -40,9 +44,7 @@ export default function AlbumDetailPage() {
 
         const hydratedSongs = await Promise.all(
           sortedAlbumSongs.map(async (as) => {
-            const res = await axios.get(
-              `http://localhost:8080/api/songs/${as.songId}`
-            );
+            const res = await axios.get(`${API_URL}/api/songs/${as.songId}`);
 
             return {
               ...res.data,
@@ -61,8 +63,29 @@ export default function AlbumDetailPage() {
     };
 
     fetchAlbumData();
-  }, [albumId]);
+  }, [albumId, API_URL]);
 
+  useEffect(() => {
+    const fetchMyPlaylists = async () => {
+      const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+      const userId = storedUser.id;
+      if (!userId) return;
+
+      try {
+        const token = sessionStorage.getItem("token");
+
+        const res = await axios.get(`${API_URL}/api/users/${userId}/playlists`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        setMyPlaylists(res.data);
+      } catch (err) {
+        console.error("Failed to fetch playlists", err);
+      }
+    };
+
+    fetchMyPlaylists();
+  }, []);
 
   // =========================
   // Guards
@@ -83,8 +106,7 @@ export default function AlbumDetailPage() {
   // =========================
   // Player helpers
   // =========================
-  const isCurrent = (song) =>
-    song && currentSong && song.id === currentSong.id;
+  const isCurrent = (song) => song && currentSong && song.id === currentSong.id;
 
   const handlePlayPause = () => {
     if (!songs.length) return;
@@ -94,7 +116,7 @@ export default function AlbumDetailPage() {
     if (isCurrent(firstSong)) {
       togglePlay();
     } else {
-      playSong(firstSong, { songs }, 0)
+      playSong(firstSong, { songs }, 0);
     }
   };
 
@@ -105,10 +127,7 @@ export default function AlbumDetailPage() {
     <div className="playlistPage-container">
       {/* HEADER */}
       <div className="playlistPage-banner">
-        <button
-          className="playlistPage-back"
-          onClick={() => navigate("/albums")}
-        >
+        <button className="playlistPage-back" onClick={() => navigate("/albums")}>
           ← Back
         </button>
 
@@ -144,18 +163,18 @@ export default function AlbumDetailPage() {
           songs.map((song, index) => (
             <div
               key={song.id}
-              className={`playlistPage-songRow ${
-                isCurrent(song) ? "active" : ""
-              }`}
-              onClick={() => playSong(
-                {
-                  ...song,
-                  albumCover: album.imgUrl,
-                  albumArtist: album.artist,
-                },
-                album,
-                index
-              )}
+              className={`playlistPage-songRow ${isCurrent(song) ? "active" : ""}`}
+              onClick={() =>
+                playSong(
+                  {
+                    ...song,
+                    albumCover: album.imgUrl,
+                    albumArtist: album.artist,
+                  },
+                  album,
+                  index
+                )
+              }
             >
               <span className="playlistPage-index">
                 {song.order ?? index + 1}
@@ -169,14 +188,76 @@ export default function AlbumDetailPage() {
                 <p className="playlistPage-title">{song.title}</p>
                 <p className="playlistPage-artistSmall">{song.artist}</p>
               </div>
+
+              <button
+                className="addToPlaylistBtn"
+                onClick={(e) => {
+                  e.stopPropagation(); // stop song play
+                  setSongToAdd(song);
+                  setIsAddOpen(true);
+                  setPlistQuery("");
+                }}
+              >
+                ＋
+              </button>
             </div>
           ))
         ) : (
-          <p className="playlistPage-noSongs">
-            Album ini belum ada lagu
-          </p>
+          <p className="playlistPage-noSongs">Album ini belum ada lagu</p>
         )}
       </div>
+
+      {isAddOpen && songToAdd && (
+        <div className="modalOverlay" onClick={() => setIsAddOpen(false)}>
+          <div className="modalCard" onClick={(e) => e.stopPropagation()}>
+            <h3>Add “{songToAdd.title}” to playlist</h3>
+
+            <input
+              placeholder="Search playlists..."
+              value={plistQuery}
+              onChange={(e) => setPlistQuery(e.target.value)}
+            />
+
+            <div className="playlistPickList">
+              {myPlaylists
+                .filter((p) =>
+                  (p.playlistName || "")
+                    .toLowerCase()
+                    .includes(plistQuery.toLowerCase())
+                )
+                .map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={async () => {
+                      try {
+                        const token = sessionStorage.getItem("token");
+
+                        await axios.put(
+                          `${API_URL}/api/playlists/${p.id}/add-song`,
+                          { songId: songToAdd.id },
+                          {
+                            headers: token
+                              ? { Authorization: `Bearer ${token}` }
+                              : {},
+                          }
+                        );
+
+                        setIsAddOpen(false);
+                        setSongToAdd(null);
+                      } catch (err) {
+                        console.error("Failed to add song", err);
+                      }
+                    }}
+                  >
+                    {p.playlistName}
+                  </button>
+                ))}
+            </div>
+
+            <button onClick={() => setIsAddOpen(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

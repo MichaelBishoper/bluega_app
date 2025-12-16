@@ -299,32 +299,6 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
       onBack={() => setCurrentPage("home")}
       onSelectSong={(song) => handleSelectSong(song, selectedPlaylist)}
       updatePlaylistName={updatePlaylistName}
-      onAddSong={(playlistId) => {
-        const newSong = {
-          id: `s-${Date.now()}`,
-          title: "Added Song",
-          artist: "Unknown",
-          image: "",
-          src: "",
-        };
-
-        setUserPlaylists((prev) =>
-          prev.map((p) =>
-            p.id === playlistId
-              ? { ...p, songs: [...(p.songs || []), newSong] }
-              : p
-          )
-        );
-
-        if (selectedPlaylist && selectedPlaylist.id === playlistId) {
-          const updated = {
-            ...selectedPlaylist,
-            songs: [...(selectedPlaylist.songs || []), newSong],
-          };
-          setSelectedPlaylist(updated);
-          setCurrentPlaylist(updated);
-        }
-      }}
       onRemoveSong={(playlistId, songId) => {
         setUserPlaylists((prev) =>
           prev.map((p) =>
