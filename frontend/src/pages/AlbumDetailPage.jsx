@@ -109,9 +109,13 @@ export default function AlbumDetailPage() {
   const isCurrent = (song) => song && currentSong && song.id === currentSong.id;
 
   const handlePlayPause = () => {
-    if (!songs.length) return;
+  if (!songs.length) return;
 
-    const firstSong = songs[0];
+  const firstSong = {
+      ...songs[0],
+      albumCover: album.imgUrl,
+      albumArtist: album.artist,
+    };
 
     if (isCurrent(firstSong)) {
       togglePlay();

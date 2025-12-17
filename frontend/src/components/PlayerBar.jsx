@@ -94,7 +94,7 @@ export default function PlayerBar() {
             className="song-cover"
             onError={(e) =>
               (e.target.src =
-                "https://placehold.co/45x45/4361ee/ffffff?text=♫")
+                "")
             }
           />
 

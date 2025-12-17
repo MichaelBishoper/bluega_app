@@ -62,15 +62,22 @@ export function MusicProvider({ children }) {
     }
 
     // normalize playlist
-    if (list?.songs) {
+    if (Array.isArray(list?.songs)) {
+      const hydrated = list.songs.map((s) => ({
+        ...s,
+        albumCover:
+          s.albumCover ||
+          s.albumImgUrl ||
+          list.imgUrl ||
+          list.cover,
+        albumArtist: s.albumArtist || list.artist,
+      }));
+
       setPlaylist(list);
-      setSongs(list.songs);
+      setPlaylistTracks(hydrated);
       setCurrentIndex(index);
-    } else {
-      setPlaylist(null);
-      setSongs([]);
-      setCurrentIndex(-1);
     }
+
 
     setCurrentSong(song);
 
@@ -127,7 +134,7 @@ export function MusicProvider({ children }) {
     playSong(playlistTracks[prevIndex], playlist, prevIndex);
   }, [playlistTracks, currentIndex, playSong, playlist]);
 
-  // 🔥 LEGACY ALIASES (DO NOT REMOVE YET)
+  // legacy alias
 const nextSong = next;
 const prevSong = prev;
 

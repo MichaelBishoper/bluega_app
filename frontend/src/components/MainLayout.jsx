@@ -205,11 +205,30 @@ const slideRecentRow = (direction) => {
                 <div
                   key={index}
                   className="mainlayout-card"
-                  onClick={() => playSong(song)}
+                  onClick={() =>
+                    playSong(
+                      {
+                        ...song,
+                        albumCover:
+                          song.albumCover ||
+                          song.albumImgUrl ||
+                          song.imgUrl,
+                      },
+                      { songs: recentSongs }, // 🔑 playlistTracks gets set
+                      index                // 🔑 currentIndex gets set
+                    )
+                  }
+
                   tabIndex={0}
                 >
                   <img
-                    src={song.cover}
+                    src={
+                      song.albumCover ||
+                      song.albumImgUrl ||
+                      song.imgUrl ||
+                      song.cover ||
+                      "https://placehold.co/150x150?text=♫"
+                    }
                     alt={song.title}
                     className="mainlayout-image"
                   />

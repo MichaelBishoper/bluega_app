@@ -23,18 +23,13 @@
   align-items: center;
 }
 
-/* KOTAK ALBUM */
-.album-card {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background: #181818;
+.album-card img {
+  width: 240px;
+  height: 240px;
+  object-fit: cover;
   border-radius: 12px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
 }
-
 
 .album-card:hover {
   background: #222;
@@ -44,6 +39,8 @@
 .album-plus {
   font-size: 42px;
   color: #666;
+  width: 240px;
+  height: 240px;
 }
 
 /* ✅ NAMA ALBUM (DI LUAR KOTAK) */
