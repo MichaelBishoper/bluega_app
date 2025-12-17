@@ -152,6 +152,29 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
     setIsPanelOpen(true);
   };
 
+  // Open a playlist by its id (used when other pages navigate to "/" with state)
+  const openPlaylistById = async (playlistId) => {
+    if (!playlistId) return;
+    try {
+      const res = await axios.get(`${PLAYLISTS_API_BASE}/${playlistId}`);
+      const backend = res.data;
+      const playlist = mapBackendToFrontend(backend);
+      handleSelectPlaylist(playlist);
+    } catch (err) {
+      console.error("Failed to open playlist by id:", err);
+    }
+  };
+
+  // Listen for navigation state hints (e.g. ProfilePage -> navigate("/", { state: { openPage: 'playlist', playlistId } }))
+  React.useEffect(() => {
+    const s = location.state || {};
+    if (s.openPage === "playlist" && s.playlistId) {
+      // clear state so we don't re-run when component re-mounts
+      navigate(location.pathname, { replace: true, state: {} });
+      openPlaylistById(s.playlistId);
+    }
+  }, [location.state]);
+
   const handleSelectSong = (song, playlist = null) => {
     playSong(song, playlist, true);
 
@@ -435,10 +458,14 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* FIXED: removed conflicts */}
-         <Route
-          path="/profile"
+        {/* Profile routes */}
+        <Route
+          path="/profile/:userId"
           element={getToken() ? <ProfilePage /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/profile"
+          element={getToken() ? <Navigate to={`/profile/${userId}`} replace /> : <Navigate to="/login" replace />}
         />
 
         <Route

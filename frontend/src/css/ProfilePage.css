@@ -32,14 +32,22 @@
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 20px;
+  gap: 50px; /* horizontal pacing */
 }
+
+.profile-section-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px; /* ✅ horizontal AND vertical spacing */
+}
+
 
 /* album/playlist sama. */
 .profile-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 20px;
+  cursor: pointer;
 }
 
 .profile-card-image {
