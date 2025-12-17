@@ -27,6 +27,10 @@ public class AlbumsService {
         return albumsRepository.findAll();
     }
 
+    public List<Albums> getAlbumsByUserId(String userId) {
+        return albumsRepository.findByUserId(userId);
+    }
+
     public Albums getAlbum(String id) {
          return albumsRepository.findById(id).orElse(null);
     }
