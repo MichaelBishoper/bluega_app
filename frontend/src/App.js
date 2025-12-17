@@ -49,9 +49,7 @@ function PrivateLayout() {
   const { currentSong, isPlaying, playSong, togglePlay, audioRef, nextSong, prevSong } =
     useMusic();
 
-    const location = useLocation();
-const isAlbumsPage = location.pathname === "/albums";
-const isAlbumDetailPage = location.pathname.startsWith("/albums/");
+  const [selectedAlbumId, setSelectedAlbumId] = useState(null);
 
   const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
@@ -228,6 +226,7 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
     setActiveSongPage(null);
     setCurrentPlaylist(null);
     setSelectedPlaylist(null);
+    setSelectedAlbumId(null);
     setCurrentPage("home");
     setIsPanelOpen(false);
     navigate("/");
@@ -267,7 +266,11 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   }
   };  
 
-
+  const goAlbums = () => {
+  setSelectedAlbumId(null);
+  setCurrentPage("albums");
+  setIsPanelOpen(false);
+};
 
 
   return (
@@ -279,18 +282,24 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   playlists={userPlaylists}
   onSelectPlaylist={handleSelectPlaylist}
   onCreatePlaylist={handleCreatePlaylist}
-  onDeletePlaylist={deletePlaylist}   // ✅ tambahkan ini
+  onDeletePlaylist={deletePlaylist} 
+  onAlbumsClick={goAlbums}
   isOpen={isSidebarOpen}
   setIsOpen={setIsSidebarOpen}
 />
 
 <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
 
-{isAlbumDetailPage ? (
-  <AlbumDetailPage />
-
-) : isAlbumsPage ? (
-  <AlbumPage />
+  {currentPage === "albumDetail" && selectedAlbumId ? (
+    <AlbumDetailPage albumId={selectedAlbumId} onBack={() => {
+      setSelectedAlbumId(null);
+      setCurrentPage("albums");
+    }} />
+  ) : currentPage === "albums" ? (
+    <AlbumPage onSelectAlbum={(id) => {
+      setSelectedAlbumId(id);
+      setCurrentPage("albumDetail");
+    }} />
 
   ) : currentPage === "playlist" && selectedPlaylist ? (
 
@@ -409,28 +418,7 @@ export default function App() {
         />
           <Route path="/add-song" element={<AddSongPage />} />
         <Route path="/add-song/next" element={<AddSongPageNext />} />
-        <Route
-  path="/albums"
-  element={
-    getToken() ? (
-      <PrivateLayout key={userId || "no-user"} />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-<Route
-  path="/albums/:albumId"
-  element={
-    getToken() ? (
-      <PrivateLayout key={userId || "no-user"} />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-
-
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MusicProvider>

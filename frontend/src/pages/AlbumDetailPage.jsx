@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../utils/api";
 import "../css/PlaylistPage.css";
 import { useMusic } from "../data/Music";
 
-export default function AlbumDetailPage() {
-  const { albumId } = useParams();
-  const navigate = useNavigate();
-
+export default function AlbumDetailPage({ albumId, onBack }) {
   const { playSong, togglePlay, currentSong, isPlaying } = useMusic();
 
   const [album, setAlbum] = useState(null);
@@ -97,7 +93,7 @@ export default function AlbumDetailPage() {
   if (!album) {
     return (
       <div className="playlistPage-container">
-        <button onClick={() => navigate("/albums")}>← Back</button>
+        <button onClick={onBack}>← Back</button>
         <p>Album not found</p>
       </div>
     );
@@ -131,7 +127,7 @@ export default function AlbumDetailPage() {
     <div className="playlistPage-container">
       {/* HEADER */}
       <div className="playlistPage-banner">
-        <button className="playlistPage-back" onClick={() => navigate("/albums")}>
+        <button className="playlistPage-back" onClick={onBack}>
           ← Back
         </button>
 

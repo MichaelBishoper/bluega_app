@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../utils/api";
 import "../css/AlbumPage.css";
 
-export default function AlbumPage() {
-  const navigate = useNavigate();
+export default function AlbumPage({ onSelectAlbum }) {
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const openAlbum = (id) => {
-    navigate(`/albums/${id}`);
+    onSelectAlbum(id);
   };
 
   useEffect(() => {

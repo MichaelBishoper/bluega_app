@@ -15,6 +15,7 @@ export default function Sidebar({
   onSelectPlaylist = () => {},
   onDeletePlaylist,
   onCreatePlaylist = () => {},
+  onAlbumsClick,
   isOpen: externalOpen,
   setIsOpen: externalSetOpen,
 }) {
@@ -102,12 +103,12 @@ export default function Sidebar({
     {
       icon: <Disc size={20} />,
       label: "Album",
-      action: () => navigate("/albums"),
+      action: onAlbumsClick,    
     },
 
     {
       icon: <PlusSquare size={20} />,
-      label: "Add Song",
+      label: "Add Album",
       action: () => navigate("/add-song"),
     },
     {
