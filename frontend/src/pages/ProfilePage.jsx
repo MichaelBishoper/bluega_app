@@ -1,32 +1,59 @@
 import React from "react";
-import { FaUser } from "react-icons/fa";
+import ProfileAvatar from "../components/ProfileAvatar";
+import ProfileSection from "../components/ProfileSection";
 import "../css/ProfilePage.css";
 
-export default function ProfilePage({ playlists, onSelectPlaylist }) {
+export default function ProfilePage() {
+  const userName = "Korleanhater";
+
+  //DUMMYDATA YA
+  const albums = [1, 2, 3];
+  const playlists = [1, 2];
+  const followedUsers = [1, 2, 3];
+
   return (
-    <div className="profile-wrapper">
+    <div className="user-profile-page">
 
-      {/* USER HEADER */}
+      {/*header */}
       <div className="profile-header">
-        <div className="profile-icon">
-          <FaUser size={60} />
-        </div>
+        <ProfileAvatar name={userName} size={90} />
 
-        <div className="profile-texts">
-          <h1 className="profile-name">Your Profile</h1>
-          <p className="profile-subtitle">All playlists you create will appear here.</p>
+        <div className="profile-header-text">
+          <h1>{userName}</h1>
+          <button className="follow-btn">Follow</button>
         </div>
       </div>
-    
-        {playlists?.map((pl) => (
-          <div key={pl.id} className="profile-card" onClick={() => onSelectPlaylist(pl)}>
-            <img
-              src={pl.image || "https://via.placeholder.com/200"}
-              alt={pl.title}
-            />
-            <div className="profile-card-title">{pl.title}</div>
+
+      {/* albums*/}
+      <ProfileSection title="Uploaded Albums">
+  {albums.map((album, i) => (
+    <div key={i} className="profile-card">
+      <div className="profile-card-image" />
+      <p className="profile-card-title">Album Name</p>
+    </div>
+  ))}
+</ProfileSection>
+
+      {/* followedusers */}
+      <ProfileSection title="Followed Users">
+        {followedUsers.map((_, i) => (
+          <div key={i} className="followed-user">
+            <ProfileAvatar name={`U${i}`} size={50} />
+            <span>User {i + 1}</span>
           </div>
         ))}
-      </div>
+      </ProfileSection>
+
+      {/* createdplaylis*/}
+      <ProfileSection title="Created Playlists">
+  {playlists.map((playlist, i) => (
+    <div key={i} className="profile-card">
+      <div className="profile-card-image" />
+      <p className="profile-card-title">My Playlist</p>
+    </div>
+  ))}
+</ProfileSection>
+
+    </div>
   );
 }
