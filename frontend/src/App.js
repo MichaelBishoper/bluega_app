@@ -50,10 +50,6 @@ function PrivateLayout() {
     useMusic();
 
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
-
-    const location = useLocation();
-const isAlbumsPage = location.pathname === "/albums";
-const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
 
@@ -143,7 +139,9 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   };
 
   const handleSelectPlaylist = (playlist) => {
-      setSearchQuery("");  
+    setSearchQuery("");  
+    setSelectedAlbumId(null);
+    if (currentPage === "albums" || currentPage === "albumDetail") setCurrentPage("playlist");
     setSelectedPlaylist(playlist);
     setCurrentPlaylist(playlist);
     setCurrentPage("playlist");
@@ -297,13 +295,6 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   setSearchQuery={setSearchQuery}
   onLogoClick={handleLogoClick}
   onLogout={handleLogout}
-/>
-
-<input
-  type="text"
-  placeholder="Search"
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value)}
 />
 
 
