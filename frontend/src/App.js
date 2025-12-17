@@ -50,6 +50,10 @@ function PrivateLayout() {
     useMusic();
 
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
+
+    const location = useLocation();
+const isAlbumsPage = location.pathname === "/albums";
+const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
 
@@ -139,9 +143,7 @@ function PrivateLayout() {
   };
 
   const handleSelectPlaylist = (playlist) => {
-    setSearchQuery("");  
-    setSelectedAlbumId(null);
-    if (currentPage === "albums" || currentPage === "albumDetail") setCurrentPage("playlist");
+      setSearchQuery("");  
     setSelectedPlaylist(playlist);
     setCurrentPlaylist(playlist);
     setCurrentPage("playlist");
@@ -171,21 +173,11 @@ function PrivateLayout() {
     const baseName = "New Playlist";
     const token = getToken();
 
-    let count = 1;
-    let uniqueName = baseName;
-
-    const existingNames = userPlaylists.map((p) => p.title);
-
-    while (existingNames.includes(uniqueName)) {
-      uniqueName = `${baseName} (${count})`;
-      count++;
-    }
-
     // Local fallback if backend fails
     const fallbackCreate = () => {
       const newPlaylist = {
         id: `pl-${Date.now()}`,
-        title: uniqueName,
+        title: baseName,
         description: "New playlist (local only)",
         image: "",
         artist: "",
@@ -211,7 +203,7 @@ function PrivateLayout() {
       const res = await axios.post(
         `${USERS_API_BASE}/${userId}/playlists`,
         {
-          playlistName: uniqueName,
+          playlistName: baseName,
           songIds: [],
         },
         {
@@ -297,6 +289,13 @@ function PrivateLayout() {
   onLogout={handleLogout}
 />
 
+<input
+  type="text"
+  placeholder="Search"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+/>
+
 
       <div className="main-layout">
 <Sidebar
@@ -313,22 +312,20 @@ function PrivateLayout() {
 
   {searchQuery.trim() !== "" ? (
 
-    <SearchPage
-      query={searchQuery}
-      onSelectAlbum={(id) => {
-        setSearchQuery("");          // 🔥 TUTUP SEARCH
-        setSelectedAlbumId(id);
-        setCurrentPage("albumDetail");
-      }}
-      onSelectPlaylist={(playlist) => {
-        setSearchQuery("");          // 🔥 TUTUP SEARCH
-        handleSelectPlaylist(playlist);
-      }}
-      onSelectUser={(userId) => {
-        setSearchQuery("");          // 🔥 TUTUP SEARCH
-        navigate(`/profile/${userId}`);
-      }}
-    />
+   <SearchPage
+  query={searchQuery}
+  onSelectAlbum={(id) => {
+    setSearchQuery("");
+    setSelectedAlbumId(id);
+    setCurrentPage("albumDetail");
+  }}
+  onSelectPlaylist={handleSelectPlaylist}
+  onSelectUser={(userId) => {
+    setSearchQuery("");
+    navigate(`/profile/${userId}`);
+  }}
+/>
+
 
   ) : currentPage === "albumDetail" && selectedAlbumId ? (
 
