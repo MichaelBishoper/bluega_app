@@ -33,11 +33,17 @@ const USERS_API_BASE = `${API_URL}/api/users`;
 
 // Convert backend playlist object to the shape frontend uses
 const mapBackendToFrontend = (p) => ({
-  id: p.id,                             // MongoDB/id from backend
-  title: p.playlistName || "Untitled",  // backend field playlistName                 
-  image: "",                      
-  artist: "",                      
-  songs: [],                         
+  id: p.id,
+  title: p.playlistName || "Untitled",
+  image: p.image || "",
+  artist: p.artist || "",
+  songs: Array.isArray(p.songs) ? p.songs.map(s => ({
+    id: s.id,
+    title: s.title,
+    artist: s.artist,
+    album: s.album ? { imgUrl: s.album.imgUrl, title: s.album.title } : null,
+    src: s.src,  // if you need the audio src
+  })) : [],
 });
 
 
@@ -51,9 +57,9 @@ function PrivateLayout() {
 
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
 
-    const location = useLocation();
-const isAlbumsPage = location.pathname === "/albums";
-const isAlbumDetailPage = location.pathname.startsWith("/albums/");
+  const location = useLocation();
+  const isAlbumsPage = location.pathname === "/albums";
+  const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
 
@@ -63,6 +69,10 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [userPlaylists, setUserPlaylists] = useState([]);
+  const handleSelectAlbum = (albumId) => {
+    setSelectedAlbumId(albumId);
+    setCurrentPage("albumDetail");
+  };
 
   useEffect(() => {
     const token = getToken();
@@ -104,7 +114,6 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   const [songDuration, setSongDuration] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState("");
-
 
   const deletePlaylist = async (playlistId) => {
     try {
@@ -380,7 +389,9 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
       playlists={userPlaylists}
       onSelect={handleSelectPlaylist}
       onSelectSong={handleSelectSong}
+      onSelectAlbum={handleSelectAlbum}   
     />
+     
 
   ) : (
 

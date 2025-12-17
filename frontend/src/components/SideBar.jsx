@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Menu,
-  Heart,
-  PlusSquare,
-  Disc,
-  Play,
-  ChevronLeft,
-} from "lucide-react";
+import { Menu, PlusSquare, Disc, ChevronLeft } from "lucide-react";
 import "../css/SideBar.css";
 import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({
   playlists = [],
   onSelectPlaylist = () => {},
-  onDeletePlaylist,
   onCreatePlaylist = () => {},
   onAlbumsClick,
   isOpen: externalOpen,
@@ -96,16 +88,13 @@ export default function Sidebar({
     dragging.current = false;
   };
 
-  const FALLBACK_IMAGE_URL = "/placeholder-cover.png";
-
   // MENU
   const menuItems = [
     {
       icon: <Disc size={20} />,
       label: "Album",
-      action: onAlbumsClick,    
+      action: onAlbumsClick,
     },
-
     {
       icon: <PlusSquare size={20} />,
       label: "Add Album",
@@ -158,33 +147,7 @@ export default function Sidebar({
                 className="playlist-item"
                 onClick={() => onSelectPlaylist(p)}
               >
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  onError={(e) => {
-                    e.currentTarget.src = FALLBACK_IMAGE_URL;
-                  }}
-                />
-
-                {isSidebarOpen && (
-                  <div className="playlist-info">
-                    <span className="playlist-title">{p.title}</span>
-                  </div>
-                )}
-
-                <Play size={14} className="play-icon" />
-
-                {isSidebarOpen && (
-                  <button
-                    className="delete-playlist-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeletePlaylist(p.id);
-                    }}
-                  >
-                    ❌
-                  </button>
-                )}
+                {p.title}
               </li>
             ))
           ) : (

@@ -3,6 +3,7 @@ package com.musicplayer.musicplayer.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,32 @@ public class UsersController {
     public Users getUserById(@PathVariable String id) {
         return usersService.getUserById(id);
     }
+
+    @GetMapping("/{userId}/following")
+    public List<Users> getFollowing(@PathVariable String userId) {
+        Users user = usersService.getUserById(userId);
+        if (user == null || user.getFollowingids() == null) {
+            return List.of();
+        }
+
+        return user.getFollowingids()
+                .stream()
+                .map(usersService::getUserById)
+                .filter(u -> u != null)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{userId}/followers")
+    public List<Users> getFollowers(@PathVariable String userId) {
+        return usersService.getAllUsers()
+                .stream()
+                .filter(u ->
+                    u.getFollowingids() != null &&
+                    u.getFollowingids().contains(userId)
+                )
+                .collect(Collectors.toList());
+    }
+
     
     @PutMapping("/{id}")
     public Users updateUser(@PathVariable String id, @RequestBody Users user) {

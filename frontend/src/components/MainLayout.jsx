@@ -2,14 +2,12 @@ import React, { useRef, useState, useEffect } from "react";
 import "../css/Mainlayout.css";
 import "../css/Playerbar.css";
 import { useMusic } from "../data/Music";
-import { followingUsers } from "../data/Following";
-import { useNavigate } from "react-router-dom";
-
+import API_URL from "../utils/api";
+import axios from "axios";
 
 export default function MainLayout({
-  playlists = [],
-  onSelect,
   onSelectSong,
+  onSelectAlbum,
   isPanelOpen,
   isPanelCollapsed,
 }) {
@@ -26,19 +24,39 @@ export default function MainLayout({
     recentHistory,
   } = useMusic();
 
-  const navigate = useNavigate();
-
-  /* ===================================================== */
-  /* ALBUMS (API SOURCE – SINGLE SOURCE OF TRUTH) */
-  /* ===================================================== */
   const [albums, setAlbums] = useState([]);
+  const [discoverAlbums, setDiscoverAlbums] = useState([]);
 
+  /* ===================================================== */
+  /* FETCH ALBUMS */
+  /* ===================================================== */
   useEffect(() => {
-    fetch("http://localhost:8080/api/albums")
+    fetch(`${API_URL}/api/albums`)
       .then((res) => res.json())
       .then(setAlbums)
       .catch(console.error);
   }, []);
+
+  /* ===================================================== */
+  /* DISCOVER RANDOM ALBUMS */
+  /* ===================================================== */
+  const pickRandomAlbums = () => {
+    if (!albums.length) return [];
+    const shuffled = [...albums].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 5);
+  };
+
+  useEffect(() => {
+    // Initially pick
+    setDiscoverAlbums(pickRandomAlbums());
+
+    // Refresh every minute
+    const interval = setInterval(() => {
+      setDiscoverAlbums(pickRandomAlbums());
+    }, 60_000);
+
+    return () => clearInterval(interval);
+  }, [albums]);
 
   /* ===================================================== */
   /* HELPERS */
@@ -48,15 +66,6 @@ export default function MainLayout({
 
   const handleSeek = (e) => seek(Number(e.target.value));
   const handleVolume = (e) => setVolumeLevel(parseFloat(e.target.value));
-
-  const getPlaylistCovers = (playlist) => {
-    if (!playlist?.songs?.length) return [];
-
-    return playlist.songs
-      .map((s) => s.album?.imgUrl)
-      .filter(Boolean)
-      .slice(0, 4);
-  };
 
   const getAlbumImage = (song) =>
     song?.album?.imgUrl ||
@@ -102,70 +111,25 @@ export default function MainLayout({
     <div className={`mainlayout-wrapper ${shiftClass}`}>
       <div className="mainlayout-container">
 
-        {/* ================= YOUR PLAYLIST ================= */}
+        {/* ================= DISCOVER ================= */}
         <div className="playlist-section">
-          <h2>Your Playlist</h2>
-
-          <div className="mainlayout-grid">
-            {playlists.map((playlist, index) => (
-              <div
-                key={index}
-                className="mainlayout-card"
-                onClick={() => onSelect(playlist)}
-                tabIndex={0}
-              >
-                <div className="playlist-cover-grid">
-                  {getPlaylistCovers(playlist).length ? (
-                    getPlaylistCovers(playlist).map((cover, i) => (
-                      <div key={i} className="playlist-cover-cell">
-                        <img src={cover} alt="" />
-                      </div>
-                    ))
-                  ) : (
-                    <div className="playlist-cover-empty">🎵</div>
-                  )}
-                </div>
-
-                <div className="mainlayout-title">{playlist.title}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ================= FOLLOWING ================= */}
-        <div className="playlist-section">
-          <h2>Following</h2>
-
-          <div className="mainlayout-grid">
-            {followingUsers.map((user) => (
-              <div key={user.id} className="following-item">
-                <img src={user.image} className="following-avatar" alt={user.name} />
-                <div className="following-name">{user.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ================= ALBUMS ================= */}
-        <div className="playlist-section">
-          <h2>Albums</h2>
-
+          <h2>Chosen for Today</h2>
           <div className="scroll-wrapper">
             <button
               className="scroll-btn left"
               onClick={() =>
-                slideRow(albumRowRef, setAlbumIndex, albumIndex, albums.length, "left")
+                slideRow(albumRowRef, setAlbumIndex, albumIndex, discoverAlbums.length, "left")
               }
             >
               ◀
             </button>
 
             <div className="scroll-row" ref={albumRowRef}>
-              {albums.map((album) => (
+              {discoverAlbums.map((album) => (
                 <div
                   key={album.id}
                   className="mainlayout-card"
-                  onClick={() => navigate(`/album/${album.id}`)}
+                  onClick={() => onSelectAlbum(album.id)}
                   tabIndex={0}
                 >
                   <img
@@ -182,7 +146,7 @@ export default function MainLayout({
             <button
               className="scroll-btn right"
               onClick={() =>
-                slideRow(albumRowRef, setAlbumIndex, albumIndex, albums.length, "right")
+                slideRow(albumRowRef, setAlbumIndex, albumIndex, discoverAlbums.length, "right")
               }
             >
               ▶

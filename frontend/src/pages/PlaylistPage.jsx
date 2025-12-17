@@ -7,19 +7,18 @@ import API_URL from "../utils/api";
 export default function PlaylistPage({
   playlist,
   onBack,
-  onRemoveSong,
+  onRemoveSong, // optional callback to parent
   updatePlaylistName,
+  onDeletePlaylist, // new prop to handle deleting the playlist
 }) {
-  // 🔥 GLOBAL MUSIC STATE (SATU SUMBER KEBENARAN)
   const { playSong, togglePlay, currentSong, isPlaying } = useMusic();
 
-  // LOCAL UI STATE
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
-  // Sync title
   useEffect(() => {
     if (playlist) setEditedName(playlist.title);
   }, [playlist]);
@@ -37,7 +36,7 @@ export default function PlaylistPage({
         const token = sessionStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        // 1) Get playlist (songIds only)
+        // 1) Get playlist (songIds)
         const plRes = await axios.get(
           `${API_URL}/api/playlists/${playlist.id}`,
           { headers }
@@ -49,11 +48,10 @@ export default function PlaylistPage({
           return;
         }
 
-        // 2) Get ALL albums 
+        // 2) Get all albums
         const albumsRes = await axios.get(`${API_URL}/api/albums`, { headers });
         const albums = albumsRes.data || [];
 
-        // Build map: songId -> album (img + artist)
         const songAlbumMap = new Map();
         albums.forEach((album) => {
           (album.songs || []).forEach((s) => {
@@ -64,11 +62,7 @@ export default function PlaylistPage({
         // 3) Hydrate songs
         const hydrated = await Promise.all(
           songIds.map(async (sid) => {
-            const sRes = await axios.get(
-              `${API_URL}/api/songs/${sid}`,
-              { headers }
-            );
-
+            const sRes = await axios.get(`${API_URL}/api/songs/${sid}`, { headers });
             const song = sRes.data;
             const album = songAlbumMap.get(String(sid));
 
@@ -97,10 +91,41 @@ export default function PlaylistPage({
   }
 
   // =========================
-  // Player helpers 
+  // Player helpers
   // =========================
-  const isCurrent = (song) =>
-    song && currentSong && song.id === currentSong.id;
+  const renamePlaylist = async () => {
+    const trimmed = editedName.trim();
+    if (!trimmed) {
+      alert("Playlist name cannot be empty");
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem("token");
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      await axios.put(
+        `${API_URL}/api/playlists/${playlist.id}/rename`,
+        { title: trimmed }, // must match backend
+        { headers }
+      );
+
+      setEditedName(trimmed);
+      setIsEditing(false);
+
+      if (updatePlaylistName) updatePlaylistName(playlist.id, trimmed);
+
+      alert("Playlist renamed successfully!");
+    } catch (err) {
+      console.error("Failed to rename playlist:", err.response || err.message);
+      alert("Failed to rename playlist. Check console for details.");
+    }
+  };
+
+  const isCurrent = (song) => song && currentSong && song.id === currentSong.id;
 
   const handlePlayPause = () => {
     if (!songs.length) return;
@@ -115,11 +140,8 @@ export default function PlaylistPage({
   };
 
   const handleSelect = (song, index) => {
-    if (isCurrent(song)) {
-      togglePlay();
-    } else {
-      playSong(song, { songs }, index);
-    }
+    if (isCurrent(song)) togglePlay();
+    else playSong(song, { songs }, index);
   };
 
   const saveTitle = () => {
@@ -128,6 +150,50 @@ export default function PlaylistPage({
 
     updatePlaylistName(playlist.id, trimmed);
     setIsEditing(false);
+  };
+
+  const handleRemoveSong = async (songId) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      await axios.put(
+        `${API_URL}/api/playlists/${playlist.id}/remove-song`,
+        { songId },
+        { headers }
+      );
+
+      // remove from local state
+      setSongs((prev) => prev.filter((s) => s.id !== songId));
+
+      // call optional parent callback
+      if (onRemoveSong) onRemoveSong(playlist.id, songId);
+    } catch (err) {
+      console.error("Failed to remove song:", err);
+    }
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!window.confirm("Are you sure you want to delete this playlist?")) return;
+
+    setDeleting(true);
+
+    try {
+      const token = sessionStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      await axios.delete(`${API_URL}/api/playlists/${playlist.id}`, { headers });
+
+      // notify parent
+      if (onDeletePlaylist) onDeletePlaylist(playlist.id);
+
+      // go back after deletion
+      onBack();
+    } catch (err) {
+      console.error("Failed to delete playlist:", err);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // =========================
@@ -153,7 +219,6 @@ export default function PlaylistPage({
           </button>
         </div>
 
-        {/* PLAYLIST COVER GRID (unchanged CSS) */}
         <div className="playlistPage-cover">
           {songs.length === 0 ? (
             <div className="playlist-cover-placeholder">🎵</div>
@@ -181,10 +246,10 @@ export default function PlaylistPage({
                 onChange={(e) => setEditedName(e.target.value)}
                 autoFocus
               />
-              <button onClick={saveTitle}>Save</button>
+              <button onClick={renamePlaylist}>Save</button>
               <button
                 onClick={() => {
-                  setEditedName(playlist.title);
+                  setEditedName(playlist.playlistName);
                   setIsEditing(false);
                 }}
               >
@@ -200,6 +265,15 @@ export default function PlaylistPage({
             </h1>
           )}
         </div>
+
+        {/* DELETE PLAYLIST */}
+        <button
+          className="playlist-delete-btn"
+          onClick={handleDeletePlaylist}
+          disabled={deleting}
+        >
+          {deleting ? "Deleting..." : "Delete Playlist"}
+        </button>
       </div>
 
       {/* SONG LIST */}
@@ -212,9 +286,7 @@ export default function PlaylistPage({
           songs.map((song, index) => (
             <div
               key={song.id}
-              className={`playlistPage-songRow ${
-                isCurrent(song) ? "active" : ""
-              }`}
+              className={`playlistPage-songRow ${isCurrent(song) ? "active" : ""}`}
               onClick={() => handleSelect(song, index)}
             >
               <span className="playlistPage-index">{index + 1}</span>
@@ -234,7 +306,7 @@ export default function PlaylistPage({
                 className="playlistPage-removeBtn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onRemoveSong(playlist.id, song.id);
+                  handleRemoveSong(song.id);
                 }}
               >
                 ✕
@@ -242,9 +314,7 @@ export default function PlaylistPage({
             </div>
           ))
         ) : (
-          <p className="playlistPage-noSongs">
-            This playlist has no songs yet.
-          </p>
+          <p className="playlistPage-noSongs">This playlist has no songs yet.</p>
         )}
       </div>
     </div>
