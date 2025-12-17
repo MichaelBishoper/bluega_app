@@ -32,9 +32,9 @@ public class PlaylistService {
         String name = playlistName.trim();
 
         // 3. Uniqueness check (same pattern as Users POST)
-        Playlists existing = playlistsRepository.findByPlaylistName(name);
+        Playlists existing = playlistsRepository.findByCreatorIdAndPlaylistName(creatorId, name);
         if (existing != null) {
-            throw new RuntimeException("Playlist name already exists");
+            throw new RuntimeException("Playlist name already exists for this user");
         }
 
         // 4. Deduplicate songs
@@ -82,9 +82,12 @@ public class PlaylistService {
 
         String name = newName.trim();
 
-        Playlists other = playlistsRepository.findByPlaylistName(name);
+        Playlists other = playlistsRepository.findByCreatorIdAndPlaylistName(
+                playlist.getCreatorId(), name
+        );
+
         if (other != null && !other.getId().equals(playlist.getId())) {
-            throw new RuntimeException("Playlist name already exists");
+            throw new RuntimeException("Playlist name already exists for this user");
         }
 
         playlist.setPlaylistName(name);

@@ -103,7 +103,10 @@ export default function Sidebar({
     {
       icon: <PlusSquare size={20} />,
       label: "New Playlist",
-      action: onCreatePlaylist,
+      action: () => {
+        console.log("Sidebar: New Playlist clicked");
+        onCreatePlaylist();
+      },
     },
   ];
 

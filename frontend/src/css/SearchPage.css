@@ -1,118 +1,115 @@
 .search-page {
-  padding: 20px;
-  background: #121212;
-  color: #fff;
-  height: 100%;
-  overflow-y: auto;
+  padding: 1rem;
 }
 
-/* Section */
 .search-section {
-  margin-bottom: 32px;
+  margin-bottom: 2.5rem;
 }
 
-.search-section h2 {
-  font-size: 1.4rem;
-  margin-bottom: 12px;
+/* Header + arrow */
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
 }
 
-/* Horizontal row like Spotify */
-.row {
+.scroll-btns button {
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+/* ROW HORIZONTAL */
+.horizontal-row {
   display: flex;
   gap: 16px;
   overflow-x: auto;
+  scroll-behavior: smooth;
   padding-bottom: 10px;
 }
 
-.row::-webkit-scrollbar {
-  height: 6px;
+.scroll-row {
+  display: flex;        /* ensure flex */
+  gap: 50px;            /* ← controls space between playlists */
 }
 
-.row::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 10px;
+.horizontal-row::-webkit-scrollbar {
+  display: none;
 }
 
-/* ===================== */
-/* USERS (CIRCLE) */
-/* ===================== */
-.user-card {
-  min-width: 120px;
-  text-align: center;
-  cursor: pointer;
-}
-
-.user-card img {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #1e1e1e;
-}
-
-.user-card span {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.9rem;
-}
-
-/* ===================== */
-/* ALBUMS (RECTANGLE) */
-/* ===================== */
-.album-card {
-  min-width: 160px;
-  cursor: pointer;
-}
-
-.album-card img {
+/* CARD UNIFORM */
+.media-card {
   width: 160px;
-  height: 160px;
-  border-radius: 10px;
-  object-fit: cover;
-  background: #1e1e1e;
-}
-
-.album-card span {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.9rem;
-}
-
-/* ===================== */
-/* PLAYLISTS (RECTANGLE) */
-/* ===================== */
-.playlist-card {
-  min-width: 180px;
+  flex-shrink: 0;
   cursor: pointer;
 }
 
-.playlist-card img {
-  width: 180px;
-  height: 180px;
-  border-radius: 12px;
-  object-fit: cover;
-  background: #1e1e1e;
+/* IMAGE BOX (FIXED RATIO) */
+.media-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;      /* 🔥 bikin kotak PERFECT */
+  background: #222;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.playlist-card span {
-  display: block;
+.media-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* TITLE */
+.media-title {
   margin-top: 8px;
   font-size: 0.9rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* ===========================================================
+   LEFT / RIGHT SCROLL BUTTONS (FIXED AT ROW EDGES)
+   =========================================================== */
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid #444;
+  color: white;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+
+  opacity: 0.85;
+  transition: all 0.2s ease;
 }
 
-/* Hover effect */
-.user-card:hover img,
-.album-card:hover img,
-.playlist-card:hover img {
-  transform: scale(1.05);
-  transition: transform 0.2s ease;
+.scroll-btn:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-  .album-card img,
-  .playlist-card img {
-    width: 140px;
-    height: 140px;
-  }
+/* 👈 LEFT BUTTON */
+.scroll-btn.left {
+  left: 0;
+  margin-left: 6px;
+}
+
+/* 👉 RIGHT BUTTON */
+.scroll-btn.right {
+  right: 0;
+  margin-right: 6px;
 }

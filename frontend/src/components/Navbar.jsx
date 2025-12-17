@@ -12,7 +12,11 @@ export default function Navbar({
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
-    navigate("/profile");
+    const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+    const myUserId = storedUser.id;
+
+    if (!myUserId) return; // optional guard
+    navigate(`/profile/${myUserId}`);
   };
 
   return (
