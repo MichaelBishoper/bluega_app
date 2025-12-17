@@ -9,7 +9,7 @@ import MainLayout from "./components/MainLayout";
 import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
 import SongPage from "./pages/SongPage";
-import ProfilePage from "./pages/ProfilePage";
+import UserProfilePage from "./pages/UserProfilePage";
 import AddSongPage from "./pages/AddSongPage";
 import AddSongPageNext from "./pages/AddSongPageNext";
 
@@ -448,6 +448,11 @@ export default function App() {
     )
   }
 />
+{/* ini profilepage ya. */}
+<Route
+      path="/profile"
+      element={getToken() ? <UserProfilePage /> : <Navigate to="/login" />}
+    />
 
 
         <Route path="*" element={<Navigate to="/" replace />} />

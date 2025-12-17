@@ -1,0 +1,65 @@
+.user-profile-page {
+  min-height: 100vh;
+  padding: 40px 60px;
+  background: #020617;
+  color: white;
+}
+
+/* HEADER */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.profile-header-text h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.follow-btn {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  background: #1d4ed8;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* GRID */
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 20px;
+}
+
+/* album/playlist sama. */
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #1e1e1e;
+  border-radius: 8px;
+}
+
+.profile-card-title {
+  font-size: 14px;
+  color: #fff;
+  opacity: 0.9;
+  text-align: left;
+}
+
+
+/* Ffoloweduser */
+.followed-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
