@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -12,12 +13,18 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 
 @JsonIgnoreProperties(ignoreUnknown = true) // Prevents mapping errors from unknown fields
+@CompoundIndexes({
+    @CompoundIndex(
+        name = "creator_playlist_unique",
+        def = "{ 'creatorId': 1, 'playlistName': 1 }",
+        unique = true
+    )
+})
 @Document(collection = "Playlists")
 public class Playlists {
     @Id
     private String id;
     @NotBlank
-    @Indexed(unique = true)
     private String playlistName;
     
     private String creatorId; 

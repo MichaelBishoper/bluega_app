@@ -237,6 +237,7 @@ export default function Login() {
         <ul style={{ textAlign: "left" }}>
           <li><b>username:</b> user | <b>Password:</b> 123456 (inline)</li>
           <li><b>username:</b> testuser | <b>Password:</b> password</li>
+          <li><b>username:</b> userdemo | <b>Password:</b> password</li>
         </ul>
       </div>
 

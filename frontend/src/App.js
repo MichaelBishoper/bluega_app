@@ -192,45 +192,33 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
     }
   };
 
+  const makeUniqueName = (base, existingTitles) => {
+    if (!existingTitles.includes(base)) return base;
+
+    let n = 1;
+    while (existingTitles.includes(`${base} (${n})`)) n++;
+    return `${base} (${n})`;
+  };
+
   const handleCreatePlaylist = async () => {
-    const baseName = "New Playlist";
-    const token = getToken();
-
-    // Local fallback if backend fails
-    const fallbackCreate = () => {
-      const newPlaylist = {
-        id: `pl-${Date.now()}`,
-        title: baseName,
-        description: "New playlist (local only)",
-        image: "",
-        artist: "",
-        songs: [],
-      };
-
-      setUserPlaylists((prev) => [newPlaylist, ...prev]);
-      setSelectedPlaylist(newPlaylist);
-      setCurrentPlaylist(newPlaylist);
-      setCurrentPage("playlist");
-      setPanelMode("playlist");
-      setPanelManuallyClosed(false);
-      setIsPanelOpen(true);
-    };
-
     if (!userId) {
-      console.warn("No userId found in sessionStorage, creating local-only playlist");
-      fallbackCreate();
+      console.warn("No userId found in sessionStorage.");
       return;
     }
+
+    const token = getToken();
+    const existingTitles = userPlaylists.map((p) => p.title);
+    const playlistName = makeUniqueName("New Playlist", existingTitles);
 
     try {
       const res = await axios.post(
         `${USERS_API_BASE}/${userId}/playlists`,
+        { playlistName, songIds: [] },
         {
-          playlistName: baseName,
-          songIds: [],
-        },
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         }
       );
 
@@ -244,12 +232,9 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
       setPanelManuallyClosed(false);
       setIsPanelOpen(true);
     } catch (err) {
-      console.error("Failed to create playlist on server, using local fallback", err);
-      fallbackCreate();
+      console.error("Failed to create playlist on server", err);
     }
   };
-
-
   const handleLogoClick = () => {
       setSearchQuery("");  
     setActiveSongPage(null);

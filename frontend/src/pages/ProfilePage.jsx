@@ -14,17 +14,15 @@ import "../css/PlaylistPage.css";
 export default function ProfilePage() {
   const navigate = useNavigate();
 
-  const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
-  const myUserId = storedUser.id;
+  // Logged-in user ("me") from sessionStorage
+  const initialStoredUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+  const [me, setMe] = useState(initialStoredUser);
+  const myUserId = me?.id;
 
+  // Route param: which profile are we viewing?
   const { userId: profileUserId } = useParams();
 
   const isMyProfile = String(profileUserId) === String(myUserId);
-
-  const userName = storedUser.username || storedUser.name || "User";
-
-  // ignore for now
-  const albums = [];
 
   const token = getToken();
   const headers = useMemo(
@@ -32,52 +30,97 @@ export default function ProfilePage() {
     [token]
   );
 
-  // Following / Followers
+  // Profile user object (the user being viewed)
+  const [profileUser, setProfileUser] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  // Following / Followers lists
   const [followingUsers, setFollowingUsers] = useState([]);
   const [followers, setFollowers] = useState([]);
 
+  // Playlists + cover grid
+  const [playlists, setPlaylists] = useState([]);
+  const [playlistCovers, setPlaylistCovers] = useState({}); // { [playlistId]: [imgUrl,...] }
+
+  // Albums (ignore for now per your original file)
+  const albums = [];
+
+  // ---------- Helpers ----------
+  const normalizeId = (v) => (v == null ? "" : String(v));
+
+  const myFollowingIds = (me?.followingids || []).map(normalizeId);
+  const isFollowing = myFollowingIds.includes(normalizeId(profileUserId));
+
+  const userName =
+    profileUser?.username ||
+    profileUser?.name ||
+    "User";
+
+  // ---------- Fetch my latest user (so follow state is correct) ----------
+  useEffect(() => {
+    const fetchMe = async () => {
+      if (!myUserId) return;
+      try {
+        const res = await axios.get(`${API_URL}/api/users/${myUserId}`, {
+          headers,
+        });
+        setMe(res.data);
+      } catch (err) {
+        console.error("Failed to refresh current user:", err);
+      }
+    };
+
+    fetchMe();
+  }, [myUserId, headers]);
+
+  // ---------- Fetch profile user + following/followers from /api/users (single call) ----------
   useEffect(() => {
     const fetchUsers = async () => {
       if (!profileUserId) {
+        setProfileUser(null);
         setFollowingUsers([]);
         setFollowers([]);
+        setLoadingProfile(false);
         return;
       }
 
+      setLoadingProfile(true);
+
       try {
-        // Fetch all users then derive both lists client-side using available endpoints
         const res = await axios.get(`${API_URL}/api/users`, { headers });
         const users = Array.isArray(res.data) ? res.data : [];
 
+        // Set the profile user object (THIS is what was missing)
+        const pu = users.find((u) => normalizeId(u.id) === normalizeId(profileUserId));
+        setProfileUser(pu || null);
+
         // profile user's following ids
-        const profileUser = users.find((u) => String(u.id) === String(profileUserId));
-        const followingIds = (profileUser && profileUser.followingids) ? profileUser.followingids : [];
+        const followingIds = (pu?.followingids || []).map(normalizeId);
 
         // Following: users that profileUser follows
-        const following = users.filter((u) => followingIds && followingIds.includes(u.id));
+        const following = users.filter((u) => followingIds.includes(normalizeId(u.id)));
 
         // Followers: users that follow profileUser
-        const followersList = users.filter((u) => (u.followingids || []).includes(String(profileUserId)));
+        const followersList = users.filter((u) =>
+          (u.followingids || []).map(normalizeId).includes(normalizeId(profileUserId))
+        );
 
         setFollowingUsers(following);
         setFollowers(followersList);
       } catch (err) {
-        console.error("Failed to fetch users for following/followers:", err);
+        console.error("Failed to fetch users for profile/following/followers:", err);
+        setProfileUser(null);
         setFollowingUsers([]);
         setFollowers([]);
+      } finally {
+        setLoadingProfile(false);
       }
     };
 
     fetchUsers();
   }, [profileUserId, headers]);
 
-  // playlists
-  const [playlists, setPlaylists] = useState([]);
-  const [playlistCovers, setPlaylistCovers] = useState({}); // { [playlistId]: [imgUrl,...] }
-
-  // =========================
-  // Fetch playlists for profile user
-  // =========================
+  // ---------- Fetch playlists for profile user ----------
   useEffect(() => {
     const fetchPlaylists = async () => {
       if (!profileUserId) return;
@@ -97,9 +140,7 @@ export default function ProfilePage() {
     fetchPlaylists();
   }, [profileUserId, headers]);
 
-  // =========================
-  // Build 2x2 covers (same idea as PlaylistPage)
-  // =========================
+  // ---------- Build 2x2 covers for each playlist ----------
   useEffect(() => {
     if (!playlists.length) {
       setPlaylistCovers({});
@@ -108,7 +149,7 @@ export default function ProfilePage() {
 
     const buildCovers = async () => {
       try {
-        // 1) Get ALL albums once
+        // Get ALL albums once
         const albumsRes = await axios.get(`${API_URL}/api/albums`, { headers });
         const albumsData = albumsRes.data || [];
 
@@ -116,11 +157,10 @@ export default function ProfilePage() {
         const songAlbumMap = new Map();
         albumsData.forEach((album) => {
           (album.songs || []).forEach((s) => {
-            songAlbumMap.set(String(s.songId), album);
+            songAlbumMap.set(normalizeId(s.songId), album);
           });
         });
 
-        // 2) Fetch each playlist for real songIds, then map to album covers
         const coverMap = {};
 
         await Promise.all(
@@ -129,11 +169,11 @@ export default function ProfilePage() {
               `${API_URL}/api/playlists/${p.id}`,
               { headers }
             );
-            const songIds = plRes.data?.songIds || [];
+            const songIds = (plRes.data?.songIds || []).map(normalizeId);
 
             coverMap[p.id] = songIds
               .slice(0, 4)
-              .map((sid) => songAlbumMap.get(String(sid))?.imgUrl || "")
+              .map((sid) => songAlbumMap.get(normalizeId(sid))?.imgUrl || "")
               .filter(Boolean);
           })
         );
@@ -148,6 +188,46 @@ export default function ProfilePage() {
     buildCovers();
   }, [playlists, headers]);
 
+  // ---------- Follow / Unfollow ----------
+  const handleToggleFollow = async () => {
+    if (!myUserId || !profileUserId || isMyProfile) return;
+
+    try {
+      if (isFollowing) {
+        await axios.put(
+          `${API_URL}/api/users/${myUserId}/unfollow/${profileUserId}`,
+          {},
+          { headers }
+        );
+
+        // update local me state
+        setMe((prev) => ({
+          ...prev,
+          followingids: (prev.followingids || []).filter(
+            (id) => normalizeId(id) !== normalizeId(profileUserId)
+          ),
+        }));
+      } else {
+        await axios.put(
+          `${API_URL}/api/users/${myUserId}/follow/${profileUserId}`,
+          {},
+          { headers }
+        );
+
+        setMe((prev) => ({
+          ...prev,
+          followingids: [...(prev.followingids || []), normalizeId(profileUserId)],
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to toggle follow:", err);
+    }
+  };
+
+  if (loadingProfile) {
+    return <div className="user-profile-page">Loading...</div>;
+  }
+
   return (
     <div className="user-profile-page">
       {/* header */}
@@ -158,7 +238,12 @@ export default function ProfilePage() {
 
         <div className="profile-header-text">
           <h1>{userName}</h1>
-          {!isMyProfile && <button className="follow-btn">Follow</button>}
+
+          {!isMyProfile && (
+            <button className="follow-btn" onClick={handleToggleFollow}>
+              {isFollowing ? "Unfollow" : "Follow"}
+            </button>
+          )}
         </div>
       </div>
 

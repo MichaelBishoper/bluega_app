@@ -28,6 +28,11 @@
   padding-bottom: 10px;
 }
 
+.scroll-row {
+  display: flex;        /* ensure flex */
+  gap: 50px;            /* ← controls space between playlists */
+}
+
 .horizontal-row::-webkit-scrollbar {
   display: none;
 }

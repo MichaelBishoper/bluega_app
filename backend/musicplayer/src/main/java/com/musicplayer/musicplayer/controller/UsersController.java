@@ -2,7 +2,6 @@ package com.musicplayer.musicplayer.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.musicplayer.musicplayer.dto.CreatePlaylistRequest;
 import com.musicplayer.musicplayer.dto.LoginRequest;
 import com.musicplayer.musicplayer.model.Playlists;
 import com.musicplayer.musicplayer.model.Users;
@@ -95,16 +95,13 @@ public class UsersController {
         return playlistService.unsavePlaylist(playlistId, userId);
     }
 
-    @PostMapping("/{userId}/playlists") //create new playlist for user
+    @PostMapping("/{userId}/playlists")
     public Playlists createPlaylist(
             @PathVariable String userId,
-            @RequestBody Map<String, Object> payload) {
-            
-        String playlistName = (String) payload.get("playlistName");
-        List<String> songIds = payload.get("songIds") != null 
-            ? (List<String>) payload.get("songIds") 
-            : new ArrayList<>();
-
+            @RequestBody CreatePlaylistRequest payload
+    ) {
+        String playlistName = payload.getPlaylistName();
+        List<String> songIds = payload.getSongIds() != null ? payload.getSongIds() : new ArrayList<>();
         return playlistService.createPlaylist(playlistName, userId, songIds);
     }
 

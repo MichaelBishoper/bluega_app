@@ -33,31 +33,62 @@ export default function SearchPage({
 
     const fetchSearch = async () => {
       try {
+        const token = sessionStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
         const [usersRes, albumsRes, playlistsRes] = await Promise.all([
-          axios.get(`${API_URL}/api/users`),
-          axios.get(`${API_URL}/api/albums`),
-          axios.get(`${API_URL}/api/playlists`)
+          axios.get(`${API_URL}/api/users`, { headers }),
+          axios.get(`${API_URL}/api/albums`, { headers }),
+          axios.get(`${API_URL}/api/playlists`, { headers })
         ]);
 
         const q = query.toLowerCase();
 
         setUsers(
-          usersRes.data.filter(u =>
-            u.username?.toLowerCase().includes(q)
-          )
+          usersRes.data.filter((u) => u.username?.toLowerCase().includes(q))
         );
 
         setAlbums(
-          albumsRes.data.filter(a =>
-            a.title?.toLowerCase().includes(q)
-          )
+          albumsRes.data.filter((a) => a.title?.toLowerCase().includes(q))
         );
 
-        setPlaylists(
-          playlistsRes.data.filter(p =>
-            (p.playlistName || "").toLowerCase().includes(q)
-          )
+        // Build mapping songId -> album (img) so we can show playlist cover grids
+        const songAlbumMap = new Map();
+        (albumsRes.data || []).forEach((album) => {
+          (album.songs || []).forEach((s) => {
+            songAlbumMap.set(String(s.songId), album);
+          });
+        });
+
+        // playlistsRes.data may be a Page object { content: [...] } or an array
+        const playlistsRaw = Array.isArray(playlistsRes.data)
+          ? playlistsRes.data
+          : playlistsRes.data?.content || [];
+
+        const matchingPlaylists = playlistsRaw.filter((p) =>
+          (p.playlistName || "").toLowerCase().includes(q)
         );
+
+        // Enrich playlists with up to 4 cover images derived from their songs' albums
+        const enrichedPlaylists = await Promise.all(
+          matchingPlaylists.map(async (p) => {
+            try {
+              const plRes = await axios.get(`${API_URL}/api/playlists/${p.id}`, { headers });
+              const songIds = plRes.data?.songIds || [];
+
+              const covers = songIds
+                .slice(0, 4)
+                .map((sid) => songAlbumMap.get(String(sid))?.imgUrl || "")
+                .filter(Boolean);
+
+              return { ...p, covers, title: p.playlistName || "Untitled Playlist" };
+            } catch (err) {
+              return { ...p, covers: [], title: p.playlistName || "Untitled Playlist" };
+            }
+          })
+        );
+
+        setPlaylists(enrichedPlaylists);
       } catch (err) {
         console.error("Search error", err);
       }
@@ -82,16 +113,19 @@ export default function SearchPage({
   <h2>Users</h2>
 
   <div className="scroll-row">
-    {users.map((u) => (
-      <div
-        key={u.id}
-        onClick={() => {
-          onSelectUser(u.id);   // ✅ useState flow
-        }}
-      >
-        <SearchUserAvatar name={u.username} />
-      </div>
-    ))}
+    {users.map((u) => {
+      const uid = u.id || u._id || (u._id && u._id.$oid) || u.username;
+      return (
+        <div
+          key={uid}
+          onClick={() => {
+            onSelectUser(uid); // navigate to profile/:id
+          }}
+        >
+          <SearchUserAvatar name={u.username} />
+        </div>
+      );
+    })}
   </div>
 </section>
 
@@ -152,22 +186,35 @@ export default function SearchPage({
     </button>
 
     <div className="scroll-row" ref={playlistRowRef}>
-      {playlists.map(p => (
-        <div
-          key={p.id}
-          className="mainlayout-card"
-          onClick={() => onSelectPlaylist(p)}
-        >
-          <img
-            src="/placeholder-playlist.png"
-            className="mainlayout-image"
-            alt={p.playlistName}
-          />
-          <div className="mainlayout-title">
-            {p.playlistName || "Untitled Playlist"}
+      {playlists.map((p) => {
+        const covers = p.covers || [];
+        return (
+          <div
+            key={p.id}
+            className="mainlayout-card"
+            style={{ cursor: "pointer" }}
+            onClick={() => onSelectPlaylist(p)}
+          >
+            <div className="playlistPage-cover">
+              {covers.length === 0 ? (
+                <div className="playlist-cover-placeholder">🎵</div>
+              ) : (
+                <div className="playlist-cover-grid">
+                  {covers.slice(0, 4).map((url, index) => (
+                    <div key={index} className="playlist-cover-cell">
+                      <img src={url} alt={p.playlistName || "Playlist"} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mainlayout-title">
+              {p.title || p.playlistName || "Untitled Playlist"}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
 
     <button
