@@ -31,9 +31,7 @@
   display: block;
 }
 
-.album-card:hover {
-  background: #222;
-}
+
 
 /* PLUS ICON */
 .album-plus {
@@ -43,7 +41,6 @@
   height: 240px;
 }
 
-/* ✅ NAMA ALBUM (DI LUAR KOTAK) */
 
 .album-name {
   margin-top: 10px;

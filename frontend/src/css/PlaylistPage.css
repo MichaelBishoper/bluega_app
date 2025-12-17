@@ -11,7 +11,7 @@
   position: relative;
   width: 100%;
   min-height: 280px;
-  background: linear-gradient(to bottom, #2c2c2c, #1a1a1a);
+  background: linear-gradient(to bottom, #09112f, #1a1a1a);
   padding: 30px;
   display: flex;
   align-items: center;
@@ -22,7 +22,7 @@
   position: absolute;
   top: 20px;
   left: 20px;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   border: none;
   padding: 6px 14px;
   color: white;
@@ -36,7 +36,7 @@
   height: 180px;
   border-radius: 12px;
   object-fit: cover;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 15px rgba(104, 175, 208, 0.4);
 }
 
 .playlistPage-info h1 {
@@ -62,22 +62,41 @@
   bottom: 30px;
 }
 
-/* PLAY BUTTON */
+/* BUTTON */
 .playlistPage-playBtn {
   width: 56px;
   height: 56px;
   border-radius: 50%;
   border: none;
-  background: #1db954;
-  color: black;
-  font-size: 22px;
+  background: #121352;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
-.playlistPage-playBtn:hover {
-  transform: scale(1.08);
-  background: #1ed760;
+/* LOGO IMAGE */
+.play-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 100%;
+}
+
+/* SPIN WHEN PLAYING */
+.playlistPage-playBtn.spinning .play-logo {
+  animation: spin 2s linear infinite;
+}
+
+/* SPIN KEYFRAMES */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* --- Song List --- */
@@ -144,15 +163,14 @@
   justify-content: center;
 }
 
-/* GRID 2x2 */
 .playlist-cover-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
   width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  gap: 2px;
 }
-
 /* CELL */
 .playlist-cover-cell {
   width: 100%;
@@ -160,7 +178,7 @@
   background: #222;
 }
 
-.playlist-cover-cell img {
+.playlist-cover-grid img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -182,4 +200,15 @@
 .playlist-cover-placeholder {
   font-size: 48px;
   color: #555;
+}
+
+.playlistPage-meta {
+  margin-bottom: 6px;
+}
+
+.playlistPage-type {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #b3b3b3;
 }

@@ -137,11 +137,17 @@ export default function AlbumDetailPage() {
 
         <div className="playlistPage-playControl">
           <button
-            className="playlistPage-playBtn"
+            className={`playlistPage-playBtn ${
+              isCurrent(songs[0]) && isPlaying ? "spinning" : ""
+            }`}
             onClick={handlePlayPause}
             disabled={!songs.length}
           >
-            {isCurrent(songs[0]) && isPlaying ? "⏸" : "▶"}
+            <img
+              src='/picture/bluga.png'   // <-- your static logo file
+              alt="Play Album"
+              className="play-logo"
+            />
           </button>
         </div>
 
@@ -154,8 +160,17 @@ export default function AlbumDetailPage() {
         </div>
 
         <div className="playlistPage-info">
+          <div className="playlistPage-meta">
+            <span className="playlistPage-type">
+              {album.type || "ALBUM"}
+            </span>
+          </div>
+
           <h1 className="playlist-title-display">{album.title}</h1>
-          <p className="playlistPage-artistSmall">{album.artist}</p>
+
+          <p className="playlistPage-artistSmall">
+            {album.artist}
+          </p>
         </div>
       </div>
 

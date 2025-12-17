@@ -1,8 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "../css/Mainlayout.css";
 import "../css/Playerbar.css";
 import { useMusic } from "../data/Music";
 import { followingUsers } from "../data/Following";
+import { useNavigate } from "react-router-dom";
 
 export default function MainLayout({
   playlists = [],
@@ -24,69 +25,83 @@ export default function MainLayout({
     recentHistory,
   } = useMusic();
 
+  const navigate = useNavigate();
+
+  /* ===================================================== */
+  /* ALBUMS (API SOURCE – SINGLE SOURCE OF TRUTH) */
+  /* ===================================================== */
+  const [albums, setAlbums] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/albums")
+      .then((res) => res.json())
+      .then(setAlbums)
+      .catch(console.error);
+  }, []);
+
+  /* ===================================================== */
+  /* HELPERS */
+  /* ===================================================== */
   const shiftClass =
     isPanelOpen ? (isPanelCollapsed ? "shifted-collapsed" : "shifted") : "";
 
   const handleSeek = (e) => seek(Number(e.target.value));
   const handleVolume = (e) => setVolumeLevel(parseFloat(e.target.value));
 
-  //added here
-  const albumPlaceholder = {
-  id: "add-album",
-  title: "Add Album",
-  artist: "",
-  cover: null,
-  isPlaceholder: true,
-};
+  const getPlaylistCovers = (playlist) => {
+    if (!playlist?.songs?.length) return [];
 
-  /* ================================================================
-      SLIDER SYSTEM → translateX (NOT scrollBy)
-      Each row slides in increments of 5 cards → like Spotify
-  ================================================================ */
-  const CARD_WIDTH = 170; 
+    return playlist.songs
+      .map((s) => s.album?.imgUrl)
+      .filter(Boolean)
+      .slice(0, 4);
+  };
+
+  const getAlbumImage = (song) =>
+    song?.album?.imgUrl ||
+    song?.albumCover ||
+    song?.albumImgUrl ||
+    song?.imgUrl ||
+    song?.cover ||
+    null;
+
+  /* ===================================================== */
+  /* SLIDER SYSTEM */
+  /* ===================================================== */
+  const CARD_WIDTH = 170;
   const VISIBLE_CARDS = 5;
 
- const albumRowRef = useRef(null);
-  const recentRef = useRef(null);
+  const albumRowRef = useRef(null);
+  const recentRowRef = useRef(null);
 
-  const [albumPageIndex, setAlbumPageIndex] = useState(0);
-  const albums = songs.slice(0, 6); // sementara dari songs ini kalo mau ganti ke album dari sini
-  const albumsWithPlaceholder = [...albums, albumPlaceholder];
-
-
+  const [albumIndex, setAlbumIndex] = useState(0);
   const [recentIndex, setRecentIndex] = useState(0);
 
-const slideRecentRow = (direction) => {
-  const maxPage =
-  Math.ceil(albumsWithPlaceholder.length / VISIBLE_CARDS) - 1;
+  const slideRow = (ref, indexSetter, index, total, direction) => {
+    const maxPage = Math.ceil(total / VISIBLE_CARDS) - 1;
+    let next = direction === "right" ? index + 1 : index - 1;
+    next = Math.max(0, Math.min(next, maxPage));
 
-  let nextPage =
-    direction === "right"
-      ? recentIndex + 1
-      : recentIndex - 1;
+    indexSetter(next);
 
-  if (nextPage < 0) nextPage = 0;
-  if (nextPage > maxPage) nextPage = maxPage;
-
-  setRecentIndex(nextPage);
-
-  const offset = nextPage * CARD_WIDTH * VISIBLE_CARDS;
-
-  if (recentRef.current) {
-    recentRef.current.style.transform = `translateX(-${offset}px)`;
-  }
-};
+    if (ref.current) {
+      ref.current.style.transform = `translateX(-${
+        next * CARD_WIDTH * VISIBLE_CARDS
+      }px)`;
+    }
+  };
 
   const recentSongs =
     recentHistory.length > 0 ? recentHistory : songs.slice(0, 5);
 
+  /* ===================================================== */
+  /* RENDER */
+  /* ===================================================== */
   return (
     <div className={`mainlayout-wrapper ${shiftClass}`}>
       <div className="mainlayout-container">
 
-        {/* ===================================================== */}
-        {/* ROW 1 — YOUR PLAYLIST */}
-        {/* ===================================================== */}
+        {/* ================= YOUR PLAYLIST ================= */}
         <div className="playlist-section">
           <h2>Your Playlist</h2>
 
@@ -98,137 +113,113 @@ const slideRecentRow = (direction) => {
                 onClick={() => onSelect(playlist)}
                 tabIndex={0}
               >
-                <img
-                  src={playlist.image}
-                  alt={playlist.title}
-                  className="mainlayout-image"
-                />
+                <div className="playlist-cover-grid">
+                  {getPlaylistCovers(playlist).length ? (
+                    getPlaylistCovers(playlist).map((cover, i) => (
+                      <div key={i} className="playlist-cover-cell">
+                        <img src={cover} alt="" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="playlist-cover-empty">🎵</div>
+                  )}
+                </div>
+
                 <div className="mainlayout-title">{playlist.title}</div>
-                <div className="mainlayout-artist">{playlist.artist}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ===================================================== */}
-        {/* ROW 2 — FOLLOWING */}
-        {/* ===================================================== */}
+        {/* ================= FOLLOWING ================= */}
         <div className="playlist-section">
           <h2>Following</h2>
 
           <div className="mainlayout-grid">
-            {followingUsers.map((user, index) => (
-              <div key={index} className="following-item">
-                <img
-                  src={user.image}
-                  className="following-avatar"
-                  alt={user.name}
-                />
+            {followingUsers.map((user) => (
+              <div key={user.id} className="following-item">
+                <img src={user.image} className="following-avatar" alt={user.name} />
                 <div className="following-name">{user.name}</div>
               </div>
             ))}
           </div>
         </div>
 
-{/* ===================================================== */}
-{/* ROW 3 — ALBUMS */}
-{/* ===================================================== */}
+        {/* ================= ALBUMS ================= */}
+        <div className="playlist-section">
+          <h2>Albums</h2>
 
-<div className="playlist-section">
-  <h2>Albums</h2>
+          <div className="scroll-wrapper">
+            <button
+              className="scroll-btn left"
+              onClick={() =>
+                slideRow(albumRowRef, setAlbumIndex, albumIndex, albums.length, "left")
+              }
+            >
+              ◀
+            </button>
 
-  <div className="scroll-wrapper">
-    <button
-      className="scroll-btn left"
-      onClick={() => slideRecentRow("left")}
-    >
-      ◀
-    </button>
-
-    <div className="scroll-row" ref={albumRowRef}>
-      {albumsWithPlaceholder.map((album, index) => (
-        <div
-          key={album.id || index}
-          className={`mainlayout-card ${
-            album.isPlaceholder ? "add-album" : ""
-          }`}
-          onClick={() => {
-            if (!album.isPlaceholder) onSelectSong(album);
-          }}
-          tabIndex={0}
-        >
-          {/* COVER / PLACEHOLDER */}
-          {album.isPlaceholder ? (
-            <div className="album-placeholder-box">
-              <span className="album-plus">+</span>
+            <div className="scroll-row" ref={albumRowRef}>
+              {albums.map((album) => (
+                <div
+                  key={album.id}
+                  className="mainlayout-card"
+                  onClick={() => navigate(`/album/${album.id}`)}
+                  tabIndex={0}
+                >
+                  <img
+                    src={album.imgUrl}
+                    alt={album.title}
+                    className="mainlayout-image"
+                  />
+                  <div className="mainlayout-title">{album.title}</div>
+                  <div className="mainlayout-artist">{album.artist}</div>
+                </div>
+              ))}
             </div>
-          ) : (
-            <img
-              src={album.cover}
-              alt={album.title}
-              className="mainlayout-image"
-            />
-          )}
 
-          {/* TITLE (DI BAWAH KOTAK) */}
-          <p className="mainlayout-title">
-            {album.isPlaceholder ? "Add Album" : album.title}
-          </p>
+            <button
+              className="scroll-btn right"
+              onClick={() =>
+                slideRow(albumRowRef, setAlbumIndex, albumIndex, albums.length, "right")
+              }
+            >
+              ▶
+            </button>
+          </div>
         </div>
-      ))}
-    </div>
 
-    <button
-      className="scroll-btn right"
-      onClick={() => slideRecentRow("right")}
-    >
-      ▶
-    </button>
-  </div>
-</div>
-
-        {/* ===================================================== */}
-        {/* ROW 4 — RECENTLY PLAYED */}
-        {/* ===================================================== */}
+        {/* ================= RECENTLY PLAYED ================= */}
         <div className="playlist-section">
           <h2>Recently Played</h2>
 
           <div className="scroll-wrapper">
-             <button
-  className="scroll-btn left"
-  onClick={() => slideRecentRow("left")}
->
-  ◀
-</button>
-            <div className="scroll-row" ref={recentRef}>
+            <button
+              className="scroll-btn left"
+              onClick={() =>
+                slideRow(
+                  recentRowRef,
+                  setRecentIndex,
+                  recentIndex,
+                  recentSongs.length,
+                  "left"
+                )
+              }
+            >
+              ◀
+            </button>
+
+            <div className="scroll-row" ref={recentRowRef}>
               {recentSongs.map((song, index) => (
                 <div
                   key={index}
                   className="mainlayout-card"
                   onClick={() =>
-                    playSong(
-                      {
-                        ...song,
-                        albumCover:
-                          song.albumCover ||
-                          song.albumImgUrl ||
-                          song.imgUrl,
-                      },
-                      { songs: recentSongs }, // 🔑 playlistTracks gets set
-                      index                // 🔑 currentIndex gets set
-                    )
+                    playSong(song, { songs: recentSongs }, index)
                   }
-
-                  tabIndex={0}
                 >
                   <img
-                    src={
-                      song.albumCover ||
-                      song.albumImgUrl ||
-                      song.imgUrl ||
-                      song.cover ||
-                      "https://placehold.co/150x150?text=♫"
-                    }
+                    src={getAlbumImage(song) || "https://placehold.co/150x150?text=♫"}
                     alt={song.title}
                     className="mainlayout-image"
                   />
@@ -239,23 +230,28 @@ const slideRecentRow = (direction) => {
             </div>
 
             <button
-  className="scroll-btn right"
-  onClick={() => slideRecentRow("right")}
->
-  ▶
-</button>
-
+              className="scroll-btn right"
+              onClick={() =>
+                slideRow(
+                  recentRowRef,
+                  setRecentIndex,
+                  recentIndex,
+                  recentSongs.length,
+                  "right"
+                )
+              }
+            >
+              ▶
+            </button>
           </div>
         </div>
 
-        {/* ===================================================== */}
-        {/* PLAYER BAR */}
-        {/* ===================================================== */}
+        {/* ================= PLAYER BAR ================= */}
         {currentSong && (
           <div className="player-bar">
             <div className="player-left">
               <img
-                src={currentSong.cover}
+                src={getAlbumImage(currentSong)}
                 alt={currentSong.title}
                 className="song-cover"
               />
