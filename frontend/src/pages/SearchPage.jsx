@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import API_URL from "../utils/api";
+import "../css/SearchPage.css";
 
 export default function SearchPage({
   query,
@@ -12,6 +13,20 @@ export default function SearchPage({
   const [albums, setAlbums] = useState([]);
   const [playlists, setPlaylists] = useState([]);
 
+  const albumRowRef = useRef(null);
+  const playlistRowRef = useRef(null);
+
+  // 🔥 SCROLL FUNCTION (FIX ESLINT)
+  const scrollRow = (ref, direction) => {
+    if (!ref?.current) return;
+
+    const scrollAmount = 320; // satu kartu + gap
+    ref.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
   useEffect(() => {
     if (!query.trim()) return;
 
@@ -20,40 +35,41 @@ export default function SearchPage({
         const [usersRes, albumsRes, playlistsRes] = await Promise.all([
           axios.get(`${API_URL}/api/users`),
           axios.get(`${API_URL}/api/albums`),
-          axios.get(`${API_URL}/api/playlists`),
+          axios.get(`${API_URL}/api/playlists`)
         ]);
 
         const q = query.toLowerCase();
 
         setUsers(
-          usersRes.data.filter((u) =>
+          usersRes.data.filter(u =>
             u.username?.toLowerCase().includes(q)
           )
         );
 
         setAlbums(
-          albumsRes.data.filter((a) =>
+          albumsRes.data.filter(a =>
             a.title?.toLowerCase().includes(q)
           )
         );
 
         setPlaylists(
-          playlistsRes.data.filter((p) =>
-            (
-              p.playlistName ||
-              p.title ||
-              p.name ||
-              ""
-            ).toLowerCase().includes(q)
+          playlistsRes.data.filter(p =>
+            (p.playlistName || "").toLowerCase().includes(q)
           )
         );
       } catch (err) {
-        console.error("Search error:", err);
+        console.error("Search error", err);
       }
     };
 
     fetchSearch();
   }, [query]);
+
+  const scroll = (ref, dir) => {
+    if (!ref.current) return;
+    const amount = dir === "left" ? -300 : 300;
+    ref.current.scrollBy({ left: amount, behavior: "smooth" });
+  };
 
   return (
     <div className="search-page">
@@ -61,17 +77,14 @@ export default function SearchPage({
       {/* USERS */}
       <section className="search-section">
         <h2>Users</h2>
-
-        <div className="row users-row">
-          {users.length === 0 && <p>No users</p>}
-
-          {users.map((u) => (
+        <div className="users-list">
+          {users.map(u => (
             <div
               key={u.id}
               className="user-card"
               onClick={() => onSelectUser?.(u.id)}
             >
-              <span>{u.username}</span>
+              {u.username}
             </div>
           ))}
         </div>
@@ -79,51 +92,85 @@ export default function SearchPage({
 
       {/* ALBUMS */}
       <section className="search-section">
-        <h2>Albums</h2>
+        <div className="playlist-section">
+  <h2>Albums</h2>
 
-        <div className="row albums-row">
-          {albums.length === 0 && <p>No albums</p>}
+  <div className="scroll-wrapper">
+    <button
+      className="scroll-btn left"
+      onClick={() => scrollRow(albumRowRef, "left")}
+    >
+      ◀
+    </button>
 
-          {albums.map((album) => (
-            <div
-              key={album.id}
-              className="album-card"
-              onClick={() => onSelectAlbum?.(album.id)}
-            >
-              <img
-                src={album.imgUrl || "/placeholder-album.png"}
-                alt={album.title}
-                onError={(e) => {
-                  e.target.src = "/placeholder-album.png";
-                }}
-              />
-              <span>{album.title}</span>
-            </div>
-          ))}
+    <div className="scroll-row" ref={albumRowRef}>
+      {albums.map(album => (
+        <div
+          key={album.id}
+          className="mainlayout-card"
+          onClick={() => onSelectAlbum(album.id)}
+        >
+          <img
+            src={album.imgUrl || "/placeholder-album.png"}
+            className="mainlayout-image"
+            alt={album.title}
+          />
+          <div className="mainlayout-title">{album.title}</div>
         </div>
+      ))}
+    </div>
+
+    <button
+      className="scroll-btn right"
+      onClick={() => scrollRow(albumRowRef, "right")}
+    >
+      ▶
+    </button>
+  </div>
+</div>
       </section>
 
       {/* PLAYLISTS */}
       <section className="search-section">
-        <h2>Playlists</h2>
+        <div className="playlist-section">
+  <h2>Playlists</h2>
 
-        <div className="row playlists-row">
-          {playlists.length === 0 && <p>No playlists</p>}
+  <div className="scroll-wrapper">
+    <button
+      className="scroll-btn left"
+      onClick={() => scrollRow(playlistRowRef, "left")}
+    >
+      ◀
+    </button>
 
-          {playlists.map((p) => (
-            <div
-              key={p.id}
-              className="playlist-card"
-              onClick={() => onSelectPlaylist?.(p)}
-            >
-              <img
-                src="/placeholder-playlist.png"
-                alt={p.playlistName || p.title}
-              />
-              <span>{p.playlistName || p.title}</span>
-            </div>
-          ))}
+    <div className="scroll-row" ref={playlistRowRef}>
+      {playlists.map(p => (
+        <div
+          key={p.id}
+          className="mainlayout-card"
+          onClick={() => onSelectPlaylist(p)}
+        >
+          <img
+            src="/placeholder-playlist.png"
+            className="mainlayout-image"
+            alt={p.playlistName}
+          />
+          <div className="mainlayout-title">
+            {p.playlistName || "Untitled Playlist"}
+          </div>
         </div>
+      ))}
+    </div>
+
+    <button
+      className="scroll-btn right"
+      onClick={() => scrollRow(playlistRowRef, "right")}
+    >
+      ▶
+    </button>
+  </div>
+</div>
+
       </section>
 
     </div>
