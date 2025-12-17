@@ -1,19 +1,23 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaUser, FaSearch } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import "../css/Navbar.css";
 import { logout } from "../utils/auth";
 
-export default function Navbar({ onLogoClick, onLogout }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+export default function Navbar({
+  searchQuery,
+  setSearchQuery,
+  onLogoClick,
+}) {
   const navigate = useNavigate();
-    const handleProfileClick = () => {
-          navigate("/profile");
+
+  const handleProfileClick = () => {
+    navigate("/profile");
   };
 
   return (
     <nav className="navbar">
-      {/* Left Section */}
+      {/* LEFT */}
       <div
         className="navbar-left"
         onClick={onLogoClick}
@@ -27,51 +31,31 @@ export default function Navbar({ onLogoClick, onLogout }) {
         <h1 className="navbar-title">Bluega</h1>
       </div>
 
-      {/* Center Section */}
+      {/* CENTER */}
       <div className="navbar-center">
         <div className="navbar-search">
           <FaSearch className="search-icon" />
-          <input type="text" placeholder="Search songs, artists..." />
+          <input
+            type="text"
+            placeholder="Search users, albums, playlists..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Right Section */}
+      {/* RIGHT */}
       <div className="navbar-right">
         <button
           className="profile-icon-btn"
           onClick={handleProfileClick}
           aria-label="Profile"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            background: "transparent",
-            border: "1px solid rgba(255,255,255,0.08)",
-            color: "white",
-            cursor: "pointer"
-          }}
         >
           <FaUser />
         </button>
 
-        <button
-          className="logout-btn"
-          onClick={logout}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            cursor: "pointer",
-            background: "transparent",
-            border: "none",
-            color: "white",
-            fontSize: "16px"
-          }}
-        >
-          <span>Logout</span>
+        <button className="logout-btn" onClick={logout}>
+          Logout
         </button>
       </div>
     </nav>

@@ -6,7 +6,6 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
 import MainLayout from "./components/MainLayout";
-import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
 import SongPage from "./pages/SongPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -21,6 +20,7 @@ import { getToken, logout } from "./utils/auth";
 import PlaylistPage from "./pages/PlaylistPage";
 import AlbumPage from "./pages/AlbumPage"
 import AlbumDetailPage from "./pages/AlbumDetailPage";
+import SearchPage from "./pages/SearchPage";
 
 import "./App.css";
 import API_URL from "./utils/api";
@@ -49,10 +49,7 @@ function PrivateLayout() {
   const { currentSong, isPlaying, playSong, togglePlay, audioRef, nextSong, prevSong } =
     useMusic();
 
-    const location = useLocation();
-const isAlbumsPage = location.pathname === "/albums";
-const isAlbumDetailPage = location.pathname.startsWith("/albums/");
-
+  const [selectedAlbumId, setSelectedAlbumId] = useState(null);
   const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
 
@@ -60,7 +57,7 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   const [activeSongPage, setActiveSongPage] = useState(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
+
   const [userPlaylists, setUserPlaylists] = useState([]);
 
   useEffect(() => {
@@ -101,6 +98,10 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
 
   const [currentTime, setCurrentTime] = useState(0);
   const [songDuration, setSongDuration] = useState(0);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+
   const deletePlaylist = async (playlistId) => {
     try {
       const token = getToken();
@@ -121,7 +122,6 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
     }
   };
 
-
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(Math.floor(audioRef.current.currentTime));
@@ -139,11 +139,12 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   };
 
   const handleSelectPlaylist = (playlist) => {
+    setSearchQuery("");  
+    setSelectedAlbumId(null);
+    if (currentPage === "albums" || currentPage === "albumDetail") setCurrentPage("playlist");
     setSelectedPlaylist(playlist);
     setCurrentPlaylist(playlist);
-
     setCurrentPage("playlist");
-
     setPanelMode("playlist");
     setPanelManuallyClosed(false);
     setIsPanelOpen(true);
@@ -170,11 +171,21 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
     const baseName = "New Playlist";
     const token = getToken();
 
+    let count = 1;
+    let uniqueName = baseName;
+
+    const existingNames = userPlaylists.map((p) => p.title);
+
+    while (existingNames.includes(uniqueName)) {
+      uniqueName = `${baseName} (${count})`;
+      count++;
+    }
+
     // Local fallback if backend fails
     const fallbackCreate = () => {
       const newPlaylist = {
         id: `pl-${Date.now()}`,
-        title: baseName,
+        title: uniqueName,
         description: "New playlist (local only)",
         image: "",
         artist: "",
@@ -200,7 +211,7 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
       const res = await axios.post(
         `${USERS_API_BASE}/${userId}/playlists`,
         {
-          playlistName: baseName,
+          playlistName: uniqueName,
           songIds: [],
         },
         {
@@ -225,9 +236,11 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
 
 
   const handleLogoClick = () => {
+      setSearchQuery("");  
     setActiveSongPage(null);
     setCurrentPlaylist(null);
     setSelectedPlaylist(null);
+    setSelectedAlbumId(null);
     setCurrentPage("home");
     setIsPanelOpen(false);
     navigate("/");
@@ -267,32 +280,77 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   }
   };  
 
-
+  const goAlbums = () => {
+     setSearchQuery("");
+  setSelectedAlbumId(null);
+  setCurrentPage("albums");
+  setIsPanelOpen(false);
+};
 
 
   return (
     <div className="app-container">
-      <Navbar onLogoClick={handleLogoClick} onLogout={handleLogout} />
+     <Navbar
+  searchQuery={searchQuery}
+  setSearchQuery={setSearchQuery}
+  onLogoClick={handleLogoClick}
+  onLogout={handleLogout}
+/>
+
 
       <div className="main-layout">
 <Sidebar
   playlists={userPlaylists}
   onSelectPlaylist={handleSelectPlaylist}
   onCreatePlaylist={handleCreatePlaylist}
-  onDeletePlaylist={deletePlaylist}   // ✅ tambahkan ini
+  onDeletePlaylist={deletePlaylist} 
+  onAlbumsClick={goAlbums}
   isOpen={isSidebarOpen}
   setIsOpen={setIsSidebarOpen}
 />
 
 <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
 
-{isAlbumDetailPage ? (
-  <AlbumDetailPage />
+  {searchQuery.trim() !== "" ? (
 
-) : isAlbumsPage ? (
-  <AlbumPage />
+    <SearchPage
+      query={searchQuery}
+      onSelectAlbum={(id) => {
+        setSearchQuery("");          // 🔥 TUTUP SEARCH
+        setSelectedAlbumId(id);
+        setCurrentPage("albumDetail");
+      }}
+      onSelectPlaylist={(playlist) => {
+        setSearchQuery("");          // 🔥 TUTUP SEARCH
+        handleSelectPlaylist(playlist);
+      }}
+      onSelectUser={(userId) => {
+        setSearchQuery("");          // 🔥 TUTUP SEARCH
+        navigate(`/profile/${userId}`);
+      }}
+    />
+
+  ) : currentPage === "albumDetail" && selectedAlbumId ? (
+
+    <AlbumDetailPage
+      albumId={selectedAlbumId}
+      onBack={() => {
+        setSelectedAlbumId(null);
+        setCurrentPage("albums");
+      }}
+    />
+
+  ) : currentPage === "albums" ? (
+
+    <AlbumPage
+      onSelectAlbum={(id) => {
+        setSelectedAlbumId(id);
+        setCurrentPage("albumDetail");
+      }}
+    />
 
   ) : currentPage === "playlist" && selectedPlaylist ? (
+ 
 
     <PlaylistPage
       playlist={selectedPlaylist}
@@ -352,17 +410,6 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
 </main>
 
 
-        <RightPanel
-          playlist={currentPlaylist}
-          selectedSong={currentSong}
-          panelMode={panelMode}
-          isPanelOpen={isPanelOpen}
-          panelManuallyClosed={panelManuallyClosed}
-          onClose={() => {
-            setIsPanelOpen(false);
-            setPanelManuallyClosed(true);
-          }}
-        />
       </div>
 
       <PlayerBar
@@ -409,28 +456,7 @@ export default function App() {
         />
           <Route path="/add-song" element={<AddSongPage />} />
         <Route path="/add-song/next" element={<AddSongPageNext />} />
-        <Route
-  path="/albums"
-  element={
-    getToken() ? (
-      <PrivateLayout key={userId || "no-user"} />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-<Route
-  path="/albums/:albumId"
-  element={
-    getToken() ? (
-      <PrivateLayout key={userId || "no-user"} />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-
-
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MusicProvider>

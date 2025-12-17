@@ -1,36 +1,15 @@
-import React, { useRef, useState, useEffect } from "react";
-import "../css/Mainlayout.css";
-import "../css/Playerbar.css";
-import { useMusic } from "../data/Music";
-import { followingUsers } from "../data/Following";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import API_URL from "../utils/api";
+import "../css/AlbumPage.css";
 
-export default function MainLayout({
-  playlists = [],
-  onSelect,
-  onSelectSong,
-  isPanelOpen,
-  isPanelCollapsed,
-}) {
-  const {
-    playSong,
-    currentSong,
-    isPlaying,
-    togglePlay,
-    progress,
-    seek,
-    volume,
-    setVolumeLevel,
-    songs,
-    recentHistory,
-  } = useMusic();
-
-  const navigate = useNavigate();
-
-  /* =========================
-     ALBUMS FROM API
-  ========================= */
+export default function AlbumPage({ onSelectAlbum }) {
   const [albums, setAlbums] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const openAlbum = (id) => {
+    onSelectAlbum(id);
+  };
 
   useEffect(() => {
     fetch("/api/albums")

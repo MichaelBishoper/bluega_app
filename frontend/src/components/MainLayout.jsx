@@ -5,6 +5,7 @@ import { useMusic } from "../data/Music";
 import { followingUsers } from "../data/Following";
 import { useNavigate } from "react-router-dom";
 
+
 export default function MainLayout({
   playlists = [],
   onSelect,
