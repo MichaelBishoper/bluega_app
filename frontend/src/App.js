@@ -173,11 +173,21 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
     const baseName = "New Playlist";
     const token = getToken();
 
+    let count = 1;
+    let uniqueName = baseName;
+
+    const existingNames = userPlaylists.map((p) => p.title);
+
+    while (existingNames.includes(uniqueName)) {
+      uniqueName = `${baseName} (${count})`;
+      count++;
+    }
+
     // Local fallback if backend fails
     const fallbackCreate = () => {
       const newPlaylist = {
         id: `pl-${Date.now()}`,
-        title: baseName,
+        title: uniqueName,
         description: "New playlist (local only)",
         image: "",
         artist: "",
@@ -203,7 +213,7 @@ const isAlbumDetailPage = location.pathname.startsWith("/albums/");
       const res = await axios.post(
         `${USERS_API_BASE}/${userId}/playlists`,
         {
-          playlistName: baseName,
+          playlistName: uniqueName,
           songIds: [],
         },
         {
