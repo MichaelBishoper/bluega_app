@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import API_URL from "../utils/api";
 import "../css/SearchPage.css";
+import SearchUserAvatar from "../components/SearchUserAvatar";
 
 export default function SearchPage({
   query,
@@ -74,21 +75,28 @@ export default function SearchPage({
   return (
     <div className="search-page">
 
-      {/* USERS */}
-      <section className="search-section">
-        <h2>Users</h2>
-        <div className="users-list">
-          {users.map(u => (
-            <div
-              key={u.id}
-              className="user-card"
-              onClick={() => onSelectUser?.(u.id)}
-            >
-              {u.username}
-            </div>
-          ))}
-        </div>
-      </section>
+     {/* USERS */}
+{/* USERS */}
+{/* USERS */}
+<section className="playlist-section">
+  <h2>Users</h2>
+
+  <div className="scroll-row">
+    {users.map((u) => (
+      <div
+        key={u.id}
+        onClick={() => {
+          onSelectUser(u.id);   // ✅ useState flow
+        }}
+      >
+        <SearchUserAvatar name={u.username} />
+      </div>
+    ))}
+  </div>
+</section>
+
+
+
 
       {/* ALBUMS */}
       <section className="search-section">
