@@ -107,21 +107,24 @@ export default function PlaylistPage({
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      await axios.put(
+      // backend expects { newName: "..." }
+      const res = await axios.put(
         `${API_URL}/api/playlists/${playlist.id}/rename`,
-        { title: trimmed }, // must match backend
+        { newName: trimmed },
         { headers }
       );
 
-      setEditedName(trimmed);
+      // prefer backend response if available
+      const updatedName = res?.data?.playlistName || trimmed;
+
+      setEditedName(updatedName);
       setIsEditing(false);
 
-      if (updatePlaylistName) updatePlaylistName(playlist.id, trimmed);
-
-      alert("Playlist renamed successfully!");
+      // update parent so sidebar/home reflect new title
+      if (updatePlaylistName) updatePlaylistName(playlist.id, updatedName);
     } catch (err) {
-      console.error("Failed to rename playlist:", err.response || err.message);
-      alert("Failed to rename playlist. Check console for details.");
+      console.error("Failed to rename playlist:", err?.response?.data || err);
+      alert(err?.response?.data?.message || "Failed to rename playlist.");
     }
   };
 

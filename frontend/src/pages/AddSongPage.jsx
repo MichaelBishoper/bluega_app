@@ -13,7 +13,8 @@ export default function AddSongPage() {
   const [previewUrl, setPreviewUrl] = useState(null);
 
   const navigate = useNavigate();
-  const userId = "6904dbd7895a745ddce4f1da";
+  const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
+  const userId = storedUser?.id;
 
   const getCountLimits = (t) => {
     if (t === "ep") return { min: 2, max: 5 };
@@ -22,6 +23,13 @@ export default function AddSongPage() {
   };
 
   const limits = getCountLimits(type);
+
+  if (!userId) {
+    alert("You must be logged in to upload an album.");
+    navigate("/login");
+    return;
+  }
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -185,7 +193,9 @@ export default function AddSongPage() {
         Back to MainLayout (Abandon)
       </button>
 
-      <button type="submit">Next</button>
+      <button type="submit" disabled={!userId}>
+        Next
+      </button>
     </form>
   );
 }

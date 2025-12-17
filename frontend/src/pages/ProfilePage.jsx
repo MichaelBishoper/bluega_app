@@ -43,8 +43,7 @@ export default function ProfilePage() {
   const [playlistCovers, setPlaylistCovers] = useState({}); // { [playlistId]: [imgUrl,...] }
 
   // Albums (ignore for now per your original file)
-  const albums = [];
-
+  const [albums, setAlbums] = useState([]);
   // ---------- Helpers ----------
   const normalizeId = (v) => (v == null ? "" : String(v));
 
@@ -119,6 +118,27 @@ export default function ProfilePage() {
 
     fetchUsers();
   }, [profileUserId, headers]);
+
+  // ---------- Fetch albums uploaded by profile user ----------
+  useEffect(() => {
+    const fetchAlbums = async () => {
+      if (!profileUserId) return;
+
+      try {
+        const res = await axios.get(
+          `${API_URL}/api/albums/user/${profileUserId}`,
+          { headers }
+        );
+        setAlbums(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error("Failed to fetch user albums:", err);
+        setAlbums([]);
+      }
+    };
+
+    fetchAlbums();
+  }, [profileUserId, headers]);
+
 
   // ---------- Fetch playlists for profile user ----------
   useEffect(() => {
@@ -249,16 +269,38 @@ export default function ProfilePage() {
 
       {/* albums */}
       <ProfileSection title="Uploaded Albums">
-        {albums.map((album, i) => (
-          <div key={i} className="profile-card">
-            <div className="profile-card-image" />
-            <p className="profile-card-title">Album Name</p>
-          </div>
-        ))}
-        {albums.length === 0 && (
-          <p style={{ opacity: 0.7 }}>Albums not available yet.</p>
+        {albums.length === 0 ? (
+          <p style={{ opacity: 0.7 }}>No uploaded albums yet.</p>
+        ) : (
+          albums.map((album) => (
+            <div
+              key={album.id}
+              className="profile-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                // pick ONE depending on how your app opens album details
+                // Option A (if your routes support it):
+                // navigate(`/albums/${album.id}`);
+
+                // Option B (if you open via "/" like playlists do):
+                navigate("/", {
+                  state: { openPage: "album", albumId: album.id },
+                });
+              }}
+            >
+              <div className="profile-card-image">
+                <img
+                  src={album.imgUrl || "/placeholder-cover.png"}
+                  alt={album.title || "Album"}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+              <p className="profile-card-title">{album.title || "Untitled Album"}</p>
+            </div>
+          ))
         )}
       </ProfileSection>
+
 
       {/* following */}
       <ProfileSection title="Following">
