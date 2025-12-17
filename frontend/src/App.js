@@ -6,7 +6,6 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/SideBar";
 import MainLayout from "./components/MainLayout";
-import RightPanel from "./components/RightPanel";
 import PlayerBar from "./components/PlayerBar";
 import SongPage from "./pages/SongPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -21,6 +20,7 @@ import { getToken, logout } from "./utils/auth";
 import PlaylistPage from "./pages/PlaylistPage";
 import AlbumPage from "./pages/AlbumPage"
 import AlbumDetailPage from "./pages/AlbumDetailPage";
+import SearchPage from "./pages/SearchPage";
 
 import "./App.css";
 import API_URL from "./utils/api";
@@ -51,6 +51,9 @@ function PrivateLayout() {
 
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
 
+    const location = useLocation();
+const isAlbumsPage = location.pathname === "/albums";
+const isAlbumDetailPage = location.pathname.startsWith("/albums/");
   const storedUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   const userId = storedUser.id; //Controls re-mounting of PrivateLayout on login change.
 
@@ -58,7 +61,7 @@ function PrivateLayout() {
   const [activeSongPage, setActiveSongPage] = useState(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
+
   const [userPlaylists, setUserPlaylists] = useState([]);
 
   useEffect(() => {
@@ -99,6 +102,10 @@ function PrivateLayout() {
 
   const [currentTime, setCurrentTime] = useState(0);
   const [songDuration, setSongDuration] = useState(0);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+
   const deletePlaylist = async (playlistId) => {
     try {
       const token = getToken();
@@ -119,7 +126,6 @@ function PrivateLayout() {
     }
   };
 
-
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(Math.floor(audioRef.current.currentTime));
@@ -137,11 +143,10 @@ function PrivateLayout() {
   };
 
   const handleSelectPlaylist = (playlist) => {
+      setSearchQuery("");  
     setSelectedPlaylist(playlist);
     setCurrentPlaylist(playlist);
-
     setCurrentPage("playlist");
-
     setPanelMode("playlist");
     setPanelManuallyClosed(false);
     setIsPanelOpen(true);
@@ -223,6 +228,7 @@ function PrivateLayout() {
 
 
   const handleLogoClick = () => {
+      setSearchQuery("");  
     setActiveSongPage(null);
     setCurrentPlaylist(null);
     setSelectedPlaylist(null);
@@ -267,6 +273,7 @@ function PrivateLayout() {
   };  
 
   const goAlbums = () => {
+     setSearchQuery("");
   setSelectedAlbumId(null);
   setCurrentPage("albums");
   setIsPanelOpen(false);
@@ -275,7 +282,20 @@ function PrivateLayout() {
 
   return (
     <div className="app-container">
-      <Navbar onLogoClick={handleLogoClick} onLogout={handleLogout} />
+     <Navbar
+  searchQuery={searchQuery}
+  setSearchQuery={setSearchQuery}
+  onLogoClick={handleLogoClick}
+  onLogout={handleLogout}
+/>
+
+<input
+  type="text"
+  placeholder="Search"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+/>
+
 
       <div className="main-layout">
 <Sidebar
@@ -290,18 +310,46 @@ function PrivateLayout() {
 
 <main className={`content-area ${isPanelOpen ? "panel-open" : ""}`}>
 
-  {currentPage === "albumDetail" && selectedAlbumId ? (
-    <AlbumDetailPage albumId={selectedAlbumId} onBack={() => {
-      setSelectedAlbumId(null);
-      setCurrentPage("albums");
-    }} />
+  {searchQuery.trim() !== "" ? (
+
+    <SearchPage
+      query={searchQuery}
+      onSelectAlbum={(id) => {
+        setSearchQuery("");          // 🔥 TUTUP SEARCH
+        setSelectedAlbumId(id);
+        setCurrentPage("albumDetail");
+      }}
+      onSelectPlaylist={(playlist) => {
+        setSearchQuery("");          // 🔥 TUTUP SEARCH
+        handleSelectPlaylist(playlist);
+      }}
+      onSelectUser={(userId) => {
+        setSearchQuery("");          // 🔥 TUTUP SEARCH
+        navigate(`/profile/${userId}`);
+      }}
+    />
+
+  ) : currentPage === "albumDetail" && selectedAlbumId ? (
+
+    <AlbumDetailPage
+      albumId={selectedAlbumId}
+      onBack={() => {
+        setSelectedAlbumId(null);
+        setCurrentPage("albums");
+      }}
+    />
+
   ) : currentPage === "albums" ? (
-    <AlbumPage onSelectAlbum={(id) => {
-      setSelectedAlbumId(id);
-      setCurrentPage("albumDetail");
-    }} />
+
+    <AlbumPage
+      onSelectAlbum={(id) => {
+        setSelectedAlbumId(id);
+        setCurrentPage("albumDetail");
+      }}
+    />
 
   ) : currentPage === "playlist" && selectedPlaylist ? (
+ 
 
     <PlaylistPage
       playlist={selectedPlaylist}
@@ -361,17 +409,6 @@ function PrivateLayout() {
 </main>
 
 
-        <RightPanel
-          playlist={currentPlaylist}
-          selectedSong={currentSong}
-          panelMode={panelMode}
-          isPanelOpen={isPanelOpen}
-          panelManuallyClosed={panelManuallyClosed}
-          onClose={() => {
-            setIsPanelOpen(false);
-            setPanelManuallyClosed(true);
-          }}
-        />
       </div>
 
       <PlayerBar

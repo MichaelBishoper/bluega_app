@@ -49,6 +49,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/albums/:albumId" element={<AlbumDetailPage />} />
         <Route
           path="/"
           element={

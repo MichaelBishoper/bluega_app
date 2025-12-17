@@ -112,10 +112,6 @@ export default function Sidebar({
       action: () => navigate("/add-song"),
     },
     {
-      icon: <Heart size={20} />,
-      label: "Liked Music",
-    },
-    {
       icon: <PlusSquare size={20} />,
       label: "New Playlist",
       action: onCreatePlaylist,

@@ -1,0 +1,118 @@
+.search-page {
+  padding: 20px;
+  background: #121212;
+  color: #fff;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Section */
+.search-section {
+  margin-bottom: 32px;
+}
+
+.search-section h2 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+}
+
+/* Horizontal row like Spotify */
+.row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.row::-webkit-scrollbar {
+  height: 6px;
+}
+
+.row::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+
+/* ===================== */
+/* USERS (CIRCLE) */
+/* ===================== */
+.user-card {
+  min-width: 120px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.user-card img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1e1e1e;
+}
+
+.user-card span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+/* ===================== */
+/* ALBUMS (RECTANGLE) */
+/* ===================== */
+.album-card {
+  min-width: 160px;
+  cursor: pointer;
+}
+
+.album-card img {
+  width: 160px;
+  height: 160px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #1e1e1e;
+}
+
+.album-card span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+/* ===================== */
+/* PLAYLISTS (RECTANGLE) */
+/* ===================== */
+.playlist-card {
+  min-width: 180px;
+  cursor: pointer;
+}
+
+.playlist-card img {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #1e1e1e;
+}
+
+.playlist-card span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+/* Hover effect */
+.user-card:hover img,
+.album-card:hover img,
+.playlist-card:hover img {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .album-card img,
+  .playlist-card img {
+    width: 140px;
+    height: 140px;
+  }
+}

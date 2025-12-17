@@ -78,74 +78,15 @@ a {
    CONTENT AREA
 ============================ */
 .content-area {
-  flex: 1;
-  width: 100%;
+  flex: 1;              /* 🔥 WAJIB */
+  min-width: 0;         /* 🔥 FIX overflow bug */
   height: 100%;
-
   overflow-y: auto;
-  overflow-x: hidden;
-
-   background: linear-gradient(135deg, #000000, #0033cc);
-
-  padding: 0;
-  margin: 0;
-
-  box-sizing: border-box;
-
-  /* ⭐ Smooth push animation */
-  transition: margin-right 0.3s ease;
+  background: linear-gradient(to bottom, #1e1e1e, #001a66);
 }
 
-/* Page push when right panel is open */
-.content-area.panel-open {
-  margin-right: 260px;
-}
 
-.content-area.panel-open-collapsed {
-  margin-right: 80px;
-}
 
-/* ============================
-   RIGHT PANEL (FIXED)
-============================ */
-.right-panel {
-  position: fixed;
-  top: 64px;
-  right: 0;
-
-  height: calc(100vh - 64px - 80px);
-  width: 260px;
-
-  background-color: #111;
-  border-left: 1px solid #222;
-
-  display: flex;
-  flex-direction: column;
-
-  padding: 20px;
-  box-sizing: border-box;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  /* slide animation */
-  transform: translateX(100%);
-  transition: transform 0.3s ease, width 0.3s ease, padding 0.3s ease;
-
-  z-index: 200; /* ⭐ Prevent overlapping bugs */
-}
-
-/* panel opened */
-.right-panel.open {
-  transform: translateX(0);
-}
-
-/* collapsed right panel */
-.right-panel.collapsed {
-  width: 80px;
-  padding: 20px 10px;
-  overflow: hidden;
-}
 
 /* ============================
    PLAYLIST AREA
