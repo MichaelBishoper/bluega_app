@@ -6,7 +6,6 @@
   height: 100%;
   padding: 0;
   margin: 0;
-  background: linear-gradient(135deg, #000000, #0033cc);
   overflow: hidden; /* prevents accidental vertical scrolling */
   overflow-y: auto;
   scrollbar-color: black;
