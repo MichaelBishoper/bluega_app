@@ -51,8 +51,8 @@
 // }
 
 
-import React, { useState } from "react";
-import { Navigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import API_URL from "../utils/api";
 
 export default function Login() {
@@ -60,13 +60,14 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   // Check if user is already logged in
-  const token = sessionStorage.getItem("token");
-  if (token) {
-    // Redirect to home page if already logged in
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    if (sessionStorage.getItem("token")) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   // Temporary local account (for frontend-only testing)
   const tempAccounts = [
@@ -231,15 +232,6 @@ export default function Login() {
         </p>
       </div>
 
-      {/* Info */}
-      <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#fff" }}>
-        <p>💡 Temporary accounts you can use:</p>
-        <ul style={{ textAlign: "left" }}>
-          <li><b>username:</b> user | <b>Password:</b> 123456 (inline)</li>
-          <li><b>username:</b> testuser | <b>Password:</b> password</li>
-          <li><b>username:</b> userdemo | <b>Password:</b> password</li>
-        </ul>
-      </div>
 
     </form>
   </div>
